@@ -150,6 +150,109 @@ function ComputeIntegralFlow(netw::McfpNet, x::AbstractVector{<:Number})
   EPS = 1e-10  # 1/m ??
   aG = [make_tree(Int, Int, Int, i) for i = 1:G.n]
 
+  # move a certain node to the root
+  splay = function (u)
+    par = edge_label(aG[u])
+    if par == nothing
+      return
+    end
+    v, w = G.EdgeList[par, :]
+    @assert u == v || u == w
+    if u == w
+      v, w = w, v
+    end
+    cut!(aG[u])
+    splay(w)
+    link!(aG[w], aG[u], par, netw.Cost[par])
+  end
+  # find path to the root in the tree
+  rootPath = function (u)
+    anc = []
+    while u != nothing
+      append!(anc, label(u))
+      u = LinkCutTrees.parent(u)
+    end
+    return anc
+  end
+  # find path between two nodes in the tree
+  treePath = function (j, k)
+    jAnc = reverse(rootPath(j))
+    kAnc = reverse(rootPath(k))
+    lca = 1
+    while lca < length(jAnc) && lca < length(kAnc) && jAnc[lca+1] == kAnc[lca+1]
+      lca += 1
+    end
+    path = vcat(reverse(jAnc[lca:length(jAnc)]), kAnc[lca+1:length(kAnc)])
+    lca = length(jAnc) - lca + 1
+    return lca, path
+  end
+  # find cost and minimum availability along the directed path
+  cost_avail = function (lca, path)
+    cost, avail = 0, Inf
+    for i = 1:(lca-1)
+      j = edge_label(aG[path[i]])
+      u, v = G.EdgeList[j, :]
+      @assert u == path[i] || v == path[i]
+      if u == path[i]
+        cost += netw.Cost[j]
+        avail = min(avail, ceil(x[j]) - x[j])
+      else
+        cost -= netw.Cost[j]
+        avail = min(avail, x[j] - floor(x[j]))
+      end
+    end
+    for i = lca+1:length(path)
+      j = edge_label(aG[path[i]])
+      u, v = G.EdgeList[j, :]
+      @assert u == path[i] || v == path[i]
+      if v == path[i]
+        cost += netw.Cost[j]
+        avail = min(avail, ceil(x[j]) - x[j])
+      else
+        cost -= netw.Cost[j]
+        avail = min(avail, x[j] - floor(x[j]))
+      end
+    end
+    return cost, avail
+  end
+  # cancel fractional flow
+  cancel = function (lca, path, avail)
+    cuts = []
+    for i = 1:(lca-1)
+      j = edge_label(aG[path[i]])
+      u, v = G.EdgeList[j, :]
+      @assert u == path[i] || v == path[i]
+      if u == path[i]
+        x[j] += avail
+        if abs(x[j] - ceil(x[j])) < EPS
+          append!(cuts, path[i])
+        end
+      else
+        x[i] -= avail
+        if abs(x[j] - floor(x[j])) < EPS
+          append!(cuts, path[i])
+        end
+      end
+    end
+    for i = lca+1:length(path)
+      j = edge_label(aG[path[i]])
+      u, v = G.EdgeList[j, :]
+      @assert u == path[i] || v == path[i]
+      if v == path[i]
+        x[j] += avail
+        if abs(x[j] - ceil(x[j])) < EPS
+          append!(cuts, path[i])
+        end
+      else
+        x[i] -= avail
+        if abs(x[j] - floor(x[j])) < EPS
+          append!(cuts, path[i])
+        end
+      end
+    end
+    return cuts
+  end
+
   for i = 1:G.m
     if abs(x[i] - round(x[i])) < EPS
       x[i] = round(x[i])
@@ -158,97 +261,6 @@ function ComputeIntegralFlow(netw::McfpNet, x::AbstractVector{<:Number})
 
     u, v = G.EdgeList[i, :]
     if LinkCutTrees.find_root(aG[u]) === LinkCutTrees.find_root(aG[v])
-      # find path to the root in the tree
-      rootPath = function (j)
-        anc = []
-        while j != nothing
-          append!(anc, label(j))
-          j = LinkCutTrees.parent(j)
-        end
-        return anc
-      end
-      # find path between two nodes in the tree
-      treePath = function (j, k)
-        jAnc = reverse(rootPath(j))
-        kAnc = reverse(rootPath(k))
-        lca = 1
-        while lca < length(jAnc) && lca < length(kAnc) && jAnc[lca+1] == kAnc[lca+1]
-          lca += 1
-        end
-        path = vcat(reverse(jAnc[lca:length(jAnc)]), kAnc[lca+1:length(kAnc)])
-        lca = length(jAnc) - lca + 1
-        return lca, path
-      end
-      # find cost and minimum availability along the directed path
-      cost_avail = function (lca, path)
-        cost, avail = 0, Inf
-        for i = 1:(lca-1)
-          j = edge_label(aG[path[i]])
-          u, v = G.EdgeList[j, :]
-          @assert u == path[i] || v == path[i]
-          if u == path[i]
-            cost += netw.Cost[j]
-            avail = min(avail, ceil(x[j]) - x[j])
-          else
-            cost -= netw.Cost[j]
-            avail = min(avail, x[j] - floor(x[j]))
-          end
-        end
-        for i = lca+1:length(path)
-          j = edge_label(aG[path[i]])
-          u, v = G.EdgeList[j, :]
-          @assert u == path[i] || v == path[i]
-          if v == path[i]
-            cost += netw.Cost[j]
-            avail = min(avail, ceil(x[j]) - x[j])
-          else
-            cost -= netw.Cost[j]
-            avail = min(avail, x[j] - floor(x[j]))
-          end
-        end
-        return cost, avail
-      end
-      # cancel fractional flow
-      cancel = function (lca, path, avail)
-        cuts = []
-        for i = 1:(lca-1)
-          j = edge_label(aG[path[i]])
-          u, v = G.EdgeList[j, :]
-          @assert u == path[i] || v == path[i]
-          if u == path[i]
-            x[j] += avail
-            if abs(x[j] - ceil(x[j])) < EPS
-              append!(cuts, path[i])
-            end
-          else
-            x[i] -= avail
-            if abs(x[j] - floor(x[j])) < EPS
-              append!(cuts, path[i])
-            end
-          end
-        end
-        for i = lca+1:length(path)
-          j = edge_label(aG[path[i]])
-          u, v = G.EdgeList[j, :]
-          @assert u == path[i] || v == path[i]
-          if v == path[i]
-            x[j] += avail
-            if abs(x[j] - ceil(x[j])) < EPS
-              append!(cuts, path[i])
-            end
-          else
-            x[i] -= avail
-            if abs(x[j] - floor(x[j])) < EPS
-              append!(cuts, path[i])
-            end
-          end
-        end
-        @assert length(cuts) > 0
-        for k in cuts
-          cut!(aG[k])
-        end
-      end
-
       lca, path = treePath(aG[u], aG[v])
       cost, avail = cost_avail(lca, path)
       cost -= netw.Cost[i]
@@ -262,20 +274,28 @@ function ComputeIntegralFlow(netw::McfpNet, x::AbstractVector{<:Number})
         avail = min(avail, ceil(x[i]) - x[i])
         flipped = false
       end
-      cancel(lca, path, avail)
+      cuts = cancel(lca, path, avail)
       if flipped
         x[i] -= avail
       else
         x[i] += avail
       end
+      if length(cuts) == 0
+        @show x[i]
+        @assert abs(x[i] - round(x[i])) < EPS
+      else
+        for k in cuts
+          cut!(aG[k])
+        end
+      end
     end
 
     if abs(x[i] - round(x[i])) < EPS
       x[i] = round(x[i])
-      continue
+    else
+      splay(u)
+      link!(aG[u], aG[v], i, netw.Cost[i])
     end
-    link!(aG[u], aG[v], i, netw.Cost[i])
   end
-  x = Int.(round.(x))
-  return x
+  return Int.(round.(x))
 end

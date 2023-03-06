@@ -7,6 +7,7 @@ pkgs.mkShell {
 
     # algoirthm stuff
     pkgs.julia
+    pkgs.openblas pkgs.liblapack pkgs.blas pkgs.lapack pkgs.mkl
     
     # scripting stuff
     pkgs.python311
