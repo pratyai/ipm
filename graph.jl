@@ -217,6 +217,7 @@ function ComputeIntegralFlow(netw::McfpNet, x::AbstractVector{<:Number})
   end
   # cancel fractional flow
   cancel = function (lca, path, avail)
+    @show lca path avail
     cuts = []
     for i = 1:(lca-1)
       j = edge_label(aG[path[i]])
@@ -287,10 +288,10 @@ function ComputeIntegralFlow(netw::McfpNet, x::AbstractVector{<:Number})
         x[i] += avail
       end
       if length(cuts) == 0
-        @show x[i]
         @assert abs(x[i] - round(x[i])) < EPS
       else
         for k in cuts
+          @show "cut", k
           cut!(aG[k])
         end
       end
@@ -300,8 +301,10 @@ function ComputeIntegralFlow(netw::McfpNet, x::AbstractVector{<:Number})
       x[i] = round(x[i])
     else
       splay(u)
+      @show "link", (u, v)
       link!(aG[u], aG[v], i, netw.Cost[i])
     end
+    @show x
   end
   return Int.(round.(x))
 end

@@ -17,9 +17,11 @@ import Base.@kwdef
   primal_eps::Number
   dual_eps::Number
   gap_eps::Number
+
+  phase::Int
 end
 
-function with(
+function with_solution(
   s::Solver,
   x::AbstractVector{<:Number},
   y::AbstractVector{<:Number},
@@ -37,17 +39,61 @@ function with(
     primal_eps = s.primal_eps,
     dual_eps = s.dual_eps,
     gap_eps = s.gap_eps,
+    phase = s.phase,
+  )
+end
+
+function with_phase(s::Solver, phase::Int)
+  return Solver(
+    netw = s.netw,
+    x = s.x,
+    y = s.y,
+    z_l = s.z_l,
+    z_u = s.z_u,
+    eps = s.eps,
+    sigma = s.sigma,
+    primal_eps = s.primal_eps,
+    dual_eps = s.dual_eps,
+    gap_eps = s.gap_eps,
+    phase = phase,
   )
 end
 
 function objective(s::Solver)
-  return s.netw.Cost' * s.x
+  if s.phase == 1
+    return 0
+  else
+    return s.netw.Cost' * s.x
+  end
+end
+
+# ref: https://link.springer.com/book/10.1007/978-0-387-40065-5 (ch. 14.2)
+function starting_point(netw::McfpNet)
+  G = netw.G
+  A, b, c = G.IncidenceMatrix, netw.Demand, netw.Cost
+  L = A * A'
+
+  x = A' * pinv(L) * b
+  dx = max(0, -1.5 * minimum(x))
+  x = x .+ dx  # beware of pointwise ops
+  y = pinv(L) * A * c
+  z = c - A'y
+  dz = max(0, -1.5 * minimum(z))
+  z = z .+ dz  # beware of pointwise ops
+  dx = 0.5 * (x' * z) / sum(z)
+  dz = 0.5 * (x' * z) / sum(x)
+  x = x .+ dx  # beware of pointwise ops
+  z = z .+ dz  # beware of pointwise ops
+  z_u = z * 0.5
+  z_l = z * 1.5
+
+  return x, y, z_l, z_u
 end
 
 function kkt_residuals(s::Solver)
-  netw = s.netw
-  G, c, b = netw.G, netw.Cost, netw.Demand
-  A = G.IncidenceMatrix
+  netw, G = s.netw, s.netw.G
+  A, b = G.IncidenceMatrix, netw.Demand
+  c = (s.phase == 1 ? zeros(netw.G.m) : netw.Cost)
   x, y, z_l, z_u = s.x, s.y, s.z_l, s.z_u
   eps = s.eps
 
@@ -94,6 +140,7 @@ function kkt_solve(
   r = -[rdc; rp]
 
   dxy = pinv(KKT) * r
+  @show KKT * dxy - r
   dx, dy = dxy[1:G.m], dxy[G.m+1:G.m+G.n]
 
   dz_l = -(rc_l + dx .* z_l) ./ (x .+ eps)  # beware of pointwise ops
@@ -143,6 +190,7 @@ function primal_dual_search_dir(s::Solver)
   return dx, dy, dz_l, dz_u
 end
 
+# ref: https://link.springer.com/book/10.1007/978-0-387-40065-5 (ch. 14.2)
 function decide_steplength(
   s::Solver,
   dx::AbstractVector{<:Number},
@@ -153,18 +201,21 @@ function decide_steplength(
   netw, G = s.netw, s.netw.G
   x, y, z_l, z_u = s.x, s.y, s.z_l, s.z_u
 
-  ax = minimum([
-    dx[i] == 0 ? Inf : (dx[i] > 0 ? netw.Cap[i] - x[i] : x[i]) / abs(dx[i]) for i = 1:G.m
-  ])
-  ay = 1.0
-  az_l = minimum([dz_l[i] < 0 ? z_l[i] : Inf for i = 1:G.m] ./ abs.(dz_l))
-  az_u = minimum([dz_u[i] < 0 ? z_u[i] : Inf for i = 1:G.m] ./ abs.(dz_u))
-  # @show ax ay az_l az_u
+  a_primal = minimum(
+    vcat(
+      [-x[i] / dx[i] for i = 1:G.m if dx[i] < 0],
+      [(netw.Cap[i] - x[i]) / dx[i] for i = 1:G.m if dx[i] > 0],
+    ),
+    init = 1,
+  )
+  a_dual = minimum(
+    vcat(
+      [-z_l[i] / dz_l[i] for i = 1:G.m if dz_l[i] < 0],
+      [-z_u[i] / dz_u[i] for i = 1:G.m if dz_u[i] < 0],
+    ),
+    init = 1,
+  )
 
-  clip = (v) -> max(0, min(1, v))
-  ax, ay, az_l, az_u = clip.([ax, ay, az_l, az_u])
-
-  a_primal, a_dual = ax, min(ay, az_l, az_u)
   return a_primal, a_dual
 end
 
