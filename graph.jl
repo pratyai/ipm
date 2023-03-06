@@ -254,6 +254,12 @@ function ComputeIntegralFlow(netw::McfpNet, x::AbstractVector{<:Number})
   end
 
   for i = 1:G.m
+    #=
+    if x[i] < EPS
+      x[i] = 0
+      continue
+    else
+    =#
     if abs(x[i] - round(x[i])) < EPS
       x[i] = round(x[i])
       continue

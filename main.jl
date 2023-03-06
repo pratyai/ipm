@@ -35,22 +35,34 @@ function main()
   @show netw.G.IncidenceMatrix * x - netw.Demand
   # x = zeros(netw.G.m)
 
-  s = Solver(netw, x, zeros(netw.G.n), ones(netw.G.m), ones(netw.G.m), 1e-1)
+  s = Solver(
+    netw = netw,
+    x = x,
+    y = zeros(netw.G.n),
+    z_l = ones(netw.G.m),
+    z_u = ones(netw.G.m),
+    eps = 1e-1,
+    sigma = 1e-1,
+    primal_eps = 1e-1,
+    dual_eps = 1e-1,
+    gap_eps = 1e-1,
+  )
   @show s.x objective(s)
-  for t = 1:10
-    @show t
-    dx, dy, dz_l, dz_u = primal_dual_search_dir(s)
+  for t = 1:100
+    @show t is_optimal_enough(s)
+    dx, dy, dz_l, dz_u = mehrotra_search_dir(s)
     @show dx dy dz_l dz_u
-    ax, ay, az_l, az_u = decide_steplength(s, dx, dy, dz_l, dz_u)
-    if norm([ax*dx; ay*dy; az_l*dz_l; az_u*dz_u], Inf) < 1e-9
+    a_primal, a_dual = decide_steplength(s, dx, dy, dz_l, dz_u)
+    @show a_primal a_dual
+    if norm([a_primal * dx; a_dual * dy; a_dual * dz_l; a_dual * dz_u], Inf) < 1e-9
       break
     end
-    nx = s.x + ax * dx
+    nx = s.x + a_primal * dx
     @show nx
     @show netw.G.IncidenceMatrix * nx - netw.Demand
-    nx = ComputeIntegralFlow(netw, nx)
-    s.x, s.y, s.z_l, s.z_u = nx, s.y + ay * dy, s.z_l + az_l * dz_l, s.z_u + az_u * dz_u
-    @show s.x objective(s)
+    # nx = ComputeIntegralFlow(netw, nx)
+    s = with(s, nx, s.y + a_dual * dy, s.z_l + a_dual * dz_l, s.z_u + a_dual * dz_u)
+    @show s.x s.y s.z_l s.z_u objective(s)
   end
   @show s.x objective(s)
 end
