@@ -2,6 +2,7 @@ include("graph.jl")
 
 using LinearAlgebra
 import Base.@kwdef
+using Setfield
 
 @kwdef struct Solver
   netw::McfpNet
@@ -17,8 +18,6 @@ import Base.@kwdef
   primal_eps::Number
   dual_eps::Number
   gap_eps::Number
-
-  phase::Int
 end
 
 function with_solution(
@@ -28,43 +27,25 @@ function with_solution(
   z_l::AbstractVector{<:Number},
   z_u::AbstractVector{<:Number},
 )
-  return Solver(
-    netw = s.netw,
-    x = x,
-    y = y,
-    z_l = z_l,
-    z_u = z_u,
-    eps = s.eps,
-    sigma = s.sigma,
-    primal_eps = s.primal_eps,
-    dual_eps = s.dual_eps,
-    gap_eps = s.gap_eps,
-    phase = s.phase,
-  )
+  s = @set s.x = x
+  s = @set s.y = y
+  s = @set s.z_l = z_l
+  s = @set s.z_u = z_u
+  return s
 end
 
-function with_phase(s::Solver, phase::Int)
-  return Solver(
-    netw = s.netw,
-    x = s.x,
-    y = s.y,
-    z_l = s.z_l,
-    z_u = s.z_u,
-    eps = s.eps,
-    sigma = s.sigma,
-    primal_eps = s.primal_eps,
-    dual_eps = s.dual_eps,
-    gap_eps = s.gap_eps,
-    phase = phase,
-  )
+function with_phase_1(s::Solver)
+  s = @set s.netw.Cost = zeros(s.netw.G.m)
+  return s
+end
+
+function with_phase_2(s::Solver, cost::AbstractVector{Int})
+  s = @set s.netw.Cost = cost
+  return s
 end
 
 function objective(s::Solver)
-  if s.phase == 1
-    return 0
-  else
-    return s.netw.Cost' * s.x
-  end
+  return s.netw.Cost' * s.x
 end
 
 # ref: https://link.springer.com/book/10.1007/978-0-387-40065-5 (ch. 14.2)
@@ -92,8 +73,7 @@ end
 
 function kkt_residuals(s::Solver)
   netw, G = s.netw, s.netw.G
-  A, b = G.IncidenceMatrix, netw.Demand
-  c = (s.phase == 1 ? zeros(netw.G.m) : netw.Cost)
+  A, b, c = G.IncidenceMatrix, netw.Demand, netw.Cost
   x, y, z_l, z_u = s.x, s.y, s.z_l, s.z_u
   eps = s.eps
 
@@ -140,7 +120,7 @@ function kkt_solve(
   r = -[rdc; rp]
 
   dxy = pinv(KKT) * r
-  @show KKT * dxy - r
+  # @show KKT * dxy - r
   dx, dy = dxy[1:G.m], dxy[G.m+1:G.m+G.n]
 
   dz_l = -(rc_l + dx .* z_l) ./ (x .+ eps)  # beware of pointwise ops
@@ -149,16 +129,22 @@ function kkt_solve(
   return dx, dy, dz_l, dz_u
 end
 
+function surrogate_duality_gap(s::Solver)
+  netw, eps = s.netw, s.eps
+  x, z_l, z_u = s.x, s.z_l, s.z_u
+  gap = -[(-x .- eps); (x - netw.Cap .- eps)]' * [z_l; z_u]  # beware of pointwise ops
+  return gap
+end
+
 # ref: https://en.wikipedia.org/wiki/Mehrotra_predictor%E2%80%93corrector_method
 function mehrotra_search_dir(s::Solver)
   netw, G = s.netw, s.netw.G
   x, y, z_l, z_u = s.x, s.y, s.z_l, s.z_u
   eps, sigma = s.eps, s.sigma
 
-  # surrogate duality gap
-  gap = -[(-x .- eps); (x - netw.Cap .- eps)]' * [z_l; z_u]  # beware of pointwise ops
+  gap = surrogate_duality_gap(s)
   mu = sigma * gap / G.m
-  @show mu
+  # @show mu
 
   # predictor step
   rd, rp, rc_l, rc_u = kkt_residuals(s)
@@ -178,8 +164,7 @@ function primal_dual_search_dir(s::Solver)
   x, y, z_l, z_u = s.x, s.y, s.z_l, s.z_u
   eps, sigma = s.eps, s.sigma
 
-  # surrogate duality gap
-  gap = -[(-x .- eps); (x - netw.Cap .- eps)]' * [z_l; z_u]  # beware of pointwise ops
+  gap = surrogate_duality_gap(s)
   mu = sigma * gap / G.m
   @show mu
 
@@ -224,11 +209,46 @@ function is_optimal_enough(s::Solver)
   x, y, z_l, z_u = s.x, s.y, s.z_l, s.z_u
   eps = s.eps
 
-  # surrogate duality gap
-  gap = -[(-x .- eps); (x - netw.Cap .- eps)]' * [z_l; z_u]  # beware of pointwise ops
+  gap = surrogate_duality_gap(s)
   rd, rp, rc_l, rc_u = kkt_residuals(s)
 
-  @show rp rd gap
+  @debug "[optimality check]" rp rd gap
 
   return norm(rp, 2) <= s.primal_eps && norm(rd, 2) <= s.dual_eps && gap <= s.gap_eps
+end
+
+function minimize(s::Solver, max_iter::Int)
+  # return (current solver state, is optimal, number of iterations completed)
+  @info "[minimizing]" max_iter objective(s)
+  for t = 1:max_iter
+    optimal = is_optimal_enough(s)
+    @debug "[iter]" t optimal objective(s)
+    @debug "[iter]" s.x s.y s.z_l s.z_u
+    if optimal
+      @info "[minimizing]" optimal t objective(s)
+      return s, optimal, t - 1
+    end
+
+    old_obj, old_gap = objective(s), surrogate_duality_gap(s)
+
+    dx, dy, dz_l, dz_u = mehrotra_search_dir(s)
+    @debug "[iter]" dx dy dz_l dz_u
+
+    a_primal, a_dual = decide_steplength(s, dx, dy, dz_l, dz_u)
+    @debug "[iter]" a_primal a_dual
+
+    nx, ny, nz_l, nz_u =
+      s.x + a_primal * dx, s.y + a_dual * dy, s.z_l + a_dual * dz_l, s.z_u + a_dual * dz_u
+    @debug "[iter]" (s.netw.G.IncidenceMatrix * nx - s.netw.Demand)
+
+    s = with_solution(s, nx, ny, nz_l, nz_u)
+
+    new_obj, new_gap = objective(s), surrogate_duality_gap(s)
+    del_obj, del_gap = old_obj - new_obj, old_gap - new_gap
+    @debug "[iter]" del_obj del_gap
+  end
+  @debug "[iter]" s.x s.y s.z_l s.z_u
+  optimal = false
+  @info "[minimizing]" optimal max_iter objective(s)
+  return s, false, max_iter
 end

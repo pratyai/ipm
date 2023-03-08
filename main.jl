@@ -1,8 +1,11 @@
 using ArgParse
 using LinearAlgebra
+using Logging
 
 include("dimacs.jl")
+include("graph.jl")
 include("ipm.jl")
+include("augmentations.jl")
 
 function parse_cmdargs()
   s = ArgParseSettings()
@@ -11,29 +14,37 @@ function parse_cmdargs()
     help = "input dimacs file path"
     arg_type = String
     required = true
+    "-l"
+    help = "log file path"
+    arg_type = String
+    required = false
   end
   return parse_args(s)
 end
 
-function augment(netw::McfpNet)
-  G = netw.G
-  n = G.n + 1
-  E = mapreduce(permutedims, vcat, [netw.Demand[i] < 0 ? [i, n] : [n, i] for i = 1:G.n])
-  E = vcat(G.EdgeList, E)
-  C = vcat(netw.Cost, sum(netw.Cost) * ones(G.n))
-  U = vcat(netw.Cap, [Int.(sum(abs.(netw.Demand)) / 2) for i = 1:G.n])
-  B = vcat(netw.Demand, 0)
-  x = vcat(zeros(G.m), abs.(netw.Demand))
-  return McfpNet(FromEdgeList(n, E), C, U, B), x
+function setup_logging(logpath::String)
+  @printf "logging into: %s\n" logpath
+  io = open(logpath, "w")
+  global_logger(SimpleLogger(io, Logging.Debug))
+  return io
 end
 
 function main()
   args = parse_cmdargs()
+
+  logio = nothing
+  if args["l"] != nothing
+    if args["l"] == "?"
+      args["l"] = "logs/" * basename(args["i"]) * ".log"
+    end
+    logio = setup_logging(args["l"])
+  end
+
+  @info "[cmdline args]" args
   netw = ReadDimacs(args["i"])
-  # netw, x = augment(netw)
-  x, y, z_l, z_u = starting_point(netw)
-  @show netw.G netw.Cost netw.Cap netw.Demand
-  @show netw.G.IncidenceMatrix * x - netw.Demand
+  netw, x = add_a_star_spanning_tree(netw, sum(netw.Cost))
+  _, y, z_l, z_u = starting_point(netw)
+  @debug netw.G netw.Cost netw.Cap netw.Demand
   # x = zeros(netw.G.m)
 
   #=
@@ -57,41 +68,20 @@ function main()
     primal_eps = 1e-1,
     dual_eps = 1e-1,
     gap_eps = 1e-1,
-    phase = 1,
   )
 
-  for phase in [1, 2]
-    @show phase
-    s = with_phase(s, phase)
-    @show s.x objective(s)
-    for t = 1:100
-      @show t is_optimal_enough(s)
-      if is_optimal_enough(s)
-        break
-      end
-      dx, dy, dz_l, dz_u = mehrotra_search_dir(s)
-      @show dx dy dz_l dz_u
-      a_primal, a_dual = decide_steplength(s, dx, dy, dz_l, dz_u)
-      @show a_primal a_dual
-      nx = s.x + a_primal * dx
-      @show nx
-      @show netw.G.IncidenceMatrix * nx - netw.Demand
-      #=
-      nx = ComputeIntegralFlow(netw, nx)
-      @show nx
-      @show netw.G.IncidenceMatrix * nx - netw.Demand
-      =#
-      s = with_solution(
-        s,
-        nx,
-        s.y + a_dual * dy,
-        s.z_l + a_dual * dz_l,
-        s.z_u + a_dual * dz_u,
-      )
-      @show s.x s.y s.z_l s.z_u objective(s)
-    end
+  s_1 = with_phase_1(s)
+  s_1, optimal, iters = minimize(s_1, 20)
+  @show optimal iters
+  @info "[phase 1]" optimal iters
+  s_2 = with_phase_2(s_1, netw.Cost)
+  s_2, optimal, iters = minimize(s_2, 20)
+  @show optimal iters
+  @info "[phase 2]" optimal iters
+
+  if logio != nothing
+    close(logio)
   end
-  @show s.x objective(s)
 end
 
 LinearAlgebra.BLAS.set_num_threads(2)
