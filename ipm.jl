@@ -34,12 +34,7 @@ function with_solution(
   return s
 end
 
-function with_phase_1(s::Solver)
-  s = @set s.netw.Cost = zeros(s.netw.G.m)
-  return s
-end
-
-function with_phase_2(s::Solver, cost::AbstractVector{Int})
+function with_cost(s::Solver, cost::AbstractVector{Int})
   s = @set s.netw.Cost = cost
   return s
 end
@@ -84,18 +79,6 @@ function kkt_residuals(s::Solver)
   return rd, rp, rc_l, rc_u
 end
 
-function box_project(s::Solver, dx::AbstractVector{<:Number})
-  netw, x = s.netw, s.x
-  for i = 1:netw.G.m
-    if dx[i] < 0 && x[i] <= 0
-      dx[i] = 0
-    elseif dx[i] > 0 && x[i] >= netw.Cap[i]
-      dx[i] = 0
-    end
-  end
-  return dx
-end
-
 function kkt_solve(
   s::Solver,
   rd::AbstractVector{<:Number},
@@ -116,11 +99,11 @@ function kkt_solve(
     A 0I
   ]
 
-  rdc = rd + rc_l ./ (x .+ eps) + rc_u ./ (netw.Cap .+ eps - x)  # beware of pointwise ops
+  rdc = rd + rc_l ./ (x .+ eps) - rc_u ./ (netw.Cap .+ eps - x)  # beware of pointwise ops
   r = -[rdc; rp]
 
   dxy = pinv(KKT) * r
-  # @show KKT * dxy - r
+  @debug "[kkt solver]" KKT * dxy - r
   dx, dy = dxy[1:G.m], dxy[G.m+1:G.m+G.n]
 
   dz_l = -(rc_l + dx .* z_l) ./ (x .+ eps)  # beware of pointwise ops
@@ -143,36 +126,51 @@ function mehrotra_search_dir(s::Solver)
   eps, sigma = s.eps, s.sigma
 
   gap = surrogate_duality_gap(s)
-  mu = sigma * gap / G.m
-  # @show mu
+  mu = gap / G.m
 
   # predictor step
   rd, rp, rc_l, rc_u = kkt_residuals(s)
   dx_aff, dy_aff, dz_laff, dz_uaff = kkt_solve(s, rd, rp, rc_l, rc_u)
 
   # centering + corrector step
+  @debug "[mehrotra]" mu sigma
   rd, rp, rc_l, rc_u = kkt_residuals(s)
-  rc_l, rc_u = rc_l .- mu + (dx_aff .* dz_laff), rc_u .- mu + (dx_aff .* dz_uaff)
+  rc_l, rc_u = rc_l .- (sigma * mu) + (dx_aff .* dz_laff), rc_u .- (sigma * mu) + (dx_aff .* dz_uaff)
   dx, dy, dz_l, dz_u = kkt_solve(s, rd, rp, rc_l, rc_u)
 
   return dx, dy, dz_l, dz_u
 end
 
 # ref: https://stanford.edu/~boyd/cvxbook/bv_cvxbook.pdf
-function primal_dual_search_dir(s::Solver)
+function path_following_search_dir(s::Solver)
   netw, G = s.netw, s.netw.G
   x, y, z_l, z_u = s.x, s.y, s.z_l, s.z_u
   eps, sigma = s.eps, s.sigma
 
   gap = surrogate_duality_gap(s)
   mu = sigma * gap / G.m
-  @show mu
+  @debug "[path following]" mu
 
   rd, rp, rc_l, rc_u = kkt_residuals(s)
   rc_l, rc_u = rc_l .- mu, rc_u .- mu
   dx, dy, dz_l, dz_u = kkt_solve(s, rd, rp, rc_l, rc_u)
 
   return dx, dy, dz_l, dz_u
+end
+
+function steplength_inside_box(
+  x::AbstractVector{<:Number},
+  dx::AbstractVector{<:Number},
+  cap::Union{AbstractVector{<:Number},Nothing} = nothing,
+)
+  n = length(x)
+  return minimum(
+    vcat(
+      [-x[i] / dx[i] for i = 1:n if dx[i] < 0],
+      (cap != nothing ? [(cap[i] - x[i]) / dx[i] for i = 1:n if dx[i] > 0] : []),
+    ),
+    init = 1,
+  )
 end
 
 # ref: https://link.springer.com/book/10.1007/978-0-387-40065-5 (ch. 14.2)
@@ -183,23 +181,11 @@ function decide_steplength(
   dz_l::AbstractVector{<:Number},
   dz_u::AbstractVector{<:Number},
 )
-  netw, G = s.netw, s.netw.G
+  netw, G, c = s.netw, s.netw.G, s.netw.Cost
   x, y, z_l, z_u = s.x, s.y, s.z_l, s.z_u
 
-  a_primal = minimum(
-    vcat(
-      [-x[i] / dx[i] for i = 1:G.m if dx[i] < 0],
-      [(netw.Cap[i] - x[i]) / dx[i] for i = 1:G.m if dx[i] > 0],
-    ),
-    init = 1,
-  )
-  a_dual = minimum(
-    vcat(
-      [-z_l[i] / dz_l[i] for i = 1:G.m if dz_l[i] < 0],
-      [-z_u[i] / dz_u[i] for i = 1:G.m if dz_u[i] < 0],
-    ),
-    init = 1,
-  )
+  a_primal = steplength_inside_box(x, dx, s.netw.Cap)
+  a_dual = min(steplength_inside_box(z_l, dz_l), steplength_inside_box(z_u, dz_u))
 
   return a_primal, a_dual
 end
@@ -231,7 +217,7 @@ function minimize(s::Solver, max_iter::Int)
 
     old_obj, old_gap = objective(s), surrogate_duality_gap(s)
 
-    dx, dy, dz_l, dz_u = mehrotra_search_dir(s)
+    dx, dy, dz_l, dz_u = path_following_search_dir(s)
     @debug "[iter]" dx dy dz_l dz_u
 
     a_primal, a_dual = decide_steplength(s, dx, dy, dz_l, dz_u)

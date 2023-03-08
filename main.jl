@@ -70,13 +70,11 @@ function main()
     gap_eps = 1e-1,
   )
 
-  s_1 = with_phase_1(s)
+  s_1 = with_cost(s, zeros(Int, s.netw.G.m))
   s_1, optimal, iters = minimize(s_1, 20)
-  @show optimal iters
   @info "[phase 1]" optimal iters
-  s_2 = with_phase_2(s_1, netw.Cost)
-  s_2, optimal, iters = minimize(s_2, 20)
-  @show optimal iters
+  s_2 = with_solution(s, s_1.x, s_1.y, s_1.z_l, s_1.z_u)
+  s_2, optimal, iters = minimize(s_2, 50)
   @info "[phase 2]" optimal iters
 
   if logio != nothing
