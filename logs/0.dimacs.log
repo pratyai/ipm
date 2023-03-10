@@ -1,169 +1,156 @@
 ┌ Info: [cmdline args]
 │   args = Dict{String, Any}("l" => "logs/0.dimacs.log", "i" => "data/0.dimacs")
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:97
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:103
 ┌ Debug: [mcfp]
-│   netw.G = Main.var"/Users/pmz/gitspace/ipm/graph.jl".Graphs.Graph(2, 1, [1 2], [-1; 1;;], [0 1; 0 0])
-│   netw.Cost = [1]
-│   netw.Cap = [1]
-│   netw.Demand = [-1, 1]
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:99
+│   netw.G = Main.var"/Users/pmz/gitspace/ipm/graph.jl".Graphs.Graph(3, 3, [1 2; 1 3; 3 2], [-1 -1 0; 1 0 1; 0 1 -1], [0 1 1; 0 0 0; 0 1 0])
+│   netw.Cost = [1, 1, 1]
+│   netw.Cap = [1, 1, 1]
+│   netw.Demand = [-1, 1, 0]
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:106
 ┌ Debug: [phase 1]
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:76
-┌ Debug: [init]
-│   s = Main.var"/Users/pmz/gitspace/ipm/long_step_path_following.jl".LongStepPathFollowing.Solver(0.001, 0.5, 0.9, 0.1, [-1 0; 1 0; 1 1], [-1, 1, 1], [0, 0], [0.1, 0.1], [0.0, 0.0, 0.0], [0.1, 0.1])
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:45
-┌ Debug: [lpf]
-│   n = 2
-│   delta = 0.000254049832952977
-│   mu = 0.010000000000000002
-│   log_epsilon = 2.3025850929940455
-│   niters = 18128
-└ @ Main.var"/Users/pmz/gitspace/ipm/long_step_path_following.jl".LongStepPathFollowing /Users/pmz/gitspace/ipm/long_step_path_following.jl:158
-┌ Debug: [iter]
-│   t = 1
-│   s.x = [0.1, 0.1]
-│   s.y = [0.0, 0.0, 0.0]
-│   s.s = [0.1, 0.1]
-│   expected_niters = 18128
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:50
-┌ Debug: [iter]
-│   mu = 0.010000000000000002
-│   rd = [0.1, 0.1]
-│   rp = [0.9, -0.9, -0.8]
-│   rc = [0.010000000000000002, 0.010000000000000002]
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:53
-┌ Debug: [kkt error]
-│   KKT * dxys - r = [-5.273559366969494e-16, -4.163336342344337e-16, 7.771561172376096e-16, -7.771561172376096e-16, -8.881784197001252e-16, -9.8879238130678e-17, -6.591949208711867e-17]
-└ @ Main.var"/Users/pmz/gitspace/ipm/long_step_path_following.jl".LongStepPathFollowing /Users/pmz/gitspace/ipm/long_step_path_following.jl:52
-┌ Debug: [iter]
-│   a = 0.1098623275756836
-│   dx = [0.8999999999999992, -0.10000000000000009]
-│   dy = [-0.4999999999999999, 0.49999999999999967, -0.18999999999999986]
-│   ds = [-0.9100000000000001, 0.08999999999999944]
-└ @ Main.var"/Users/pmz/gitspace/ipm/long_step_path_following.jl".LongStepPathFollowing /Users/pmz/gitspace/ipm/long_step_path_following.jl:122
-┌ Debug: [iter]
-│   del_mu = 0.005106730969999267
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:64
-┌ Debug: [lpf]
-│   n = 2
-│   delta = 0.000254049832952977
-│   mu = 0.004893269030000735
-│   log_epsilon = 3.0173095925641995
-│   niters = 23754
-└ @ Main.var"/Users/pmz/gitspace/ipm/long_step_path_following.jl".LongStepPathFollowing /Users/pmz/gitspace/ipm/long_step_path_following.jl:158
-┌ Debug: [iter]
-│   t = 2
-│   s.x = [0.19887609481811516, 0.08901376724243164]
-│   s.y = [-0.05493116378784178, 0.05493116378784176, -0.020873842239379867]
-│   s.s = [2.528190612792469e-5, 0.10988760948181146]
-│   expected_niters = 23754
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:50
-┌ Debug: [iter]
-│   mu = 0.004893269030000735
-│   rd = [0.0890137672424316, 0.0890137672424316]
-│   rp = [0.8011239051818848, -0.8011239051818848, -0.7121101379394532]
-│   rc = [5.027966760279837e-6, 0.00978151009324119]
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:53
-┌ Debug: [kkt error]
-│   KKT * dxys - r = [-1.6653345369377348e-16, -2.498001805406602e-16, 3.3306690738754696e-16, -3.3306690738754696e-16, -3.3306690738754696e-16, -4.336808689942018e-18, 1.8214596497756474e-17]
-└ @ Main.var"/Users/pmz/gitspace/ipm/long_step_path_following.jl".LongStepPathFollowing /Users/pmz/gitspace/ipm/long_step_path_following.jl:52
-┌ Debug: [iter]
-│   a = 0.9992227554321289
-│   dx = [0.8011239051818845, -0.0890137672424316]
-│   dy = [-0.013728908142164351, 0.013728908142164317, -0.13848860988117118]
-│   ds = [0.02201702635441075, 0.04947484263873933]
-└ @ Main.var"/Users/pmz/gitspace/ipm/long_step_path_following.jl".LongStepPathFollowing /Users/pmz/gitspace/ipm/long_step_path_following.jl:122
-┌ Debug: [iter]
-│   del_mu = -0.006117983040295996
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:64
-┌ Debug: [lpf]
-│   n = 2
-│   delta = 0.000254049832952977
-│   mu = 0.011011252070296731
-│   log_epsilon = 2.2062525205297367
-│   niters = 17369
-└ @ Main.var"/Users/pmz/gitspace/ipm/long_step_path_following.jl".LongStepPathFollowing /Users/pmz/gitspace/ipm/long_step_path_following.jl:158
-┌ Debug: [iter]
-│   t = 3
-│   s.x = [0.9993773307965054, 6.918546705496353e-5]
-│   s.y = [-0.06864940121072984, 0.06864940121072978, -0.15925481260080887]
-│   s.s = [0.022025195646404032, 0.15932399806786357]
-│   expected_niters = 17369
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:50
-┌ Debug: [iter]
-│   mu = 0.011011252070296731
-│   rd = [6.918546705477618e-5, 6.918546705469986e-5]
-│   rp = [0.0006226692034946302, -0.0006226692034946302, -0.0005534837364397083]
-│   rc = [0.022011481235374074, 1.102290521938925e-5]
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:53
-┌ Debug: [iter end]
-│   s.x = [0.9993773307965054, 6.918546705496353e-5]
-│   s.y = [-0.06864940121072984, 0.06864940121072978, -0.15925481260080887]
-│   s.s = [0.022025195646404032, 0.15932399806786357]
-│   optimal = true
-│   niters = 2
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:66
-┌ Debug: [phase 2]
 └ @ Main /Users/pmz/gitspace/ipm/main.jl:82
 ┌ Debug: [init]
-│   s = Main.var"/Users/pmz/gitspace/ipm/long_step_path_following.jl".LongStepPathFollowing.Solver(0.001, 0.5, 0.9, 0.1, [-1 0; 1 0; 1 1], [-1, 1, 1], [1, 0], [0.9993773307965054, 6.918546705496353e-5], [-0.06864940121072984, 0.06864940121072978, -0.15925481260080887], [0.022025195646404032, 0.15932399806786357])
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:45
-┌ Debug: [lpf]
-│   n = 2
-│   delta = 0.000254049832952977
-│   mu = 0.011011252070296731
-│   log_epsilon = 2.2062525205297367
-│   niters = 17369
-└ @ Main.var"/Users/pmz/gitspace/ipm/long_step_path_following.jl".LongStepPathFollowing /Users/pmz/gitspace/ipm/long_step_path_following.jl:158
+│   s = Main.var"/Users/pmz/gitspace/ipm/mehrotra_predictor_corrector.jl".MehrotraPredictorCorrector.Solver([-1 -1 0 0 0 0; 1 0 1 0 0 0; 0 1 -1 0 0 0; 1 0 0 1 0 0; 0 1 0 0 1 0; 0 0 1 0 0 1], [-1, 1, 0, 1, 1, 1], [0, 0, 0, 0, 0, 0], [0.1, 0.9, 0.9, 0.9, 0.1, 0.1], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.1, 0.1, 0.1, 0.1, 0.1, 0.1])
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:51
 ┌ Debug: [iter]
 │   t = 1
-│   s.x = [0.9993773307965054, 6.918546705496353e-5]
-│   s.y = [-0.06864940121072984, 0.06864940121072978, -0.15925481260080887]
-│   s.s = [0.022025195646404032, 0.15932399806786357]
-│   expected_niters = 17369
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:50
+│   s.x = [0.1, 0.9, 0.9, 0.9, 0.1, 0.1]
+│   s.y = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+│   s.s = [0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
+│   expected_niters = nothing
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:56
 ┌ Debug: [iter]
-│   mu = 0.011011252070296731
-│   rd = [-0.9999308145329452, 6.918546705469986e-5]
-│   rp = [0.0006226692034946302, -0.0006226692034946302, -0.0005534837364397083]
-│   rc = [0.022011481235374074, 1.102290521938925e-5]
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:53
+│   mu = 0.05000000000000001
+│   rd = [0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
+│   rp = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+│   rc = [0.010000000000000002, 0.09000000000000001, 0.09000000000000001, 0.09000000000000001, 0.010000000000000002, 0.010000000000000002]
+│   norm(rd, Inf) = 0.1
+│   norm(rp, Inf) = 0.0
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:59
 ┌ Debug: [kkt error]
-│   KKT * dxys - r = [-1.1102230246251565e-16, 5.6621374255882984e-14, -5.561957144850638e-16, 5.561957144850638e-16, -1.2207032260014294e-15, -8.536574225281868e-15, -9.29638310775971e-15]
-└ @ Main.var"/Users/pmz/gitspace/ipm/long_step_path_following.jl".LongStepPathFollowing /Users/pmz/gitspace/ipm/long_step_path_following.jl:52
+│   KKT * [dx; dy; ds] + [rd; rp; rc] = [-1.3877787807814457e-17, 0.0, 0.0, 0.0, -1.3877787807814457e-17, -1.3877787807814457e-17, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+└ @ Main.var"/Users/pmz/gitspace/ipm/mehrotra_predictor_corrector.jl".MehrotraPredictorCorrector /Users/pmz/gitspace/ipm/mehrotra_predictor_corrector.jl:105
+┌ Debug: [kkt error]
+│   KKT * [dx; dy; ds] + [rd; rp; rc] = [-1.3877787807814457e-17, 0.0, 0.0, 0.0, -1.3877787807814457e-17, -1.3877787807814457e-17, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+└ @ Main.var"/Users/pmz/gitspace/ipm/mehrotra_predictor_corrector.jl".MehrotraPredictorCorrector /Users/pmz/gitspace/ipm/mehrotra_predictor_corrector.jl:105
 ┌ Debug: [iter]
-│   a = 0.9994993209838867
-│   dx = [0.0006226692034951864, -6.918546705669877e-5]
-│   dy = [-72.12606537229385, 72.12606537237221, -143.2400773129696]
-│   ds = [-0.012122617163519003, 143.2400081275026]
-└ @ Main.var"/Users/pmz/gitspace/ipm/long_step_path_following.jl".LongStepPathFollowing /Users/pmz/gitspace/ipm/long_step_path_following.jl:122
+│   ap = 0.9
+│   ad = 0.8999999999999999
+│   dx = [-0.0, -0.0, -0.0, -0.0, -0.0, -0.0]
+│   dy = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+│   ds = [-0.10000000000000002, -0.1, -0.1, -0.1, -0.10000000000000002, -0.10000000000000002]
+└ @ Main.var"/Users/pmz/gitspace/ipm/mehrotra_predictor_corrector.jl".MehrotraPredictorCorrector /Users/pmz/gitspace/ipm/mehrotra_predictor_corrector.jl:125
 ┌ Debug: [iter]
-│   del_mu = 0.006054447189888937
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:64
-┌ Debug: [lpf]
-│   n = 2
-│   delta = 0.000254049832952977
-│   mu = 0.004956804880407794
-│   log_epsilon = 3.004408830159761
-│   niters = 23653
-└ @ Main.var"/Users/pmz/gitspace/ipm/long_step_path_following.jl".LongStepPathFollowing /Users/pmz/gitspace/ipm/long_step_path_following.jl:158
+│   del_mu = 0.045000000000000005
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:70
 ┌ Debug: [iter]
 │   t = 2
-│   s.x = [0.9999996882425964, 3.4639709840052126e-8]
-│   s.y = [-72.15860276605787, 72.15860276613618, -143.32761482459335]
-│   s.s = [0.009908648022919178, 143.3276148592331]
-│   expected_niters = 23653
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:50
+│   s.x = [0.1, 0.9, 0.9, 0.9, 0.1, 0.1]
+│   s.y = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+│   s.s = [0.009999999999999995, 0.010000000000000009, 0.010000000000000009, 0.010000000000000009, 0.009999999999999995, 0.009999999999999995]
+│   expected_niters = nothing
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:56
 ┌ Debug: [iter]
-│   mu = 0.004956804880407794
-│   rd = [-0.000500644376368875, 3.4639754176168935e-8]
-│   rp = [3.117574035593762e-7, -3.117574035593762e-7, -2.7711769368110595e-7]
-│   rc = [0.009908644933824798, 4.964826990790578e-6]
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:53
+│   mu = 0.0050000000000000044
+│   rd = [0.009999999999999995, 0.010000000000000009, 0.010000000000000009, 0.010000000000000009, 0.009999999999999995, 0.009999999999999995]
+│   rp = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+│   rc = [0.0009999999999999996, 0.009000000000000008, 0.009000000000000008, 0.009000000000000008, 0.0009999999999999996, 0.0009999999999999996]
+│   norm(rd, Inf) = 0.010000000000000009
+│   norm(rp, Inf) = 0.0
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:59
 ┌ Debug: [iter end]
-│   s.x = [0.9999996882425964, 3.4639709840052126e-8]
-│   s.y = [-72.15860276605787, 72.15860276613618, -143.32761482459335]
-│   s.s = [0.009908648022919178, 143.3276148592331]
+│   s.x = [0.1, 0.9, 0.9, 0.9, 0.1, 0.1]
+│   s.y = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+│   s.s = [0.009999999999999995, 0.010000000000000009, 0.010000000000000009, 0.010000000000000009, 0.009999999999999995, 0.009999999999999995]
 │   optimal = true
 │   niters = 1
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:66
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:72
+┌ Debug: [phase 2]
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:88
+┌ Debug: [init]
+│   s = Main.var"/Users/pmz/gitspace/ipm/mehrotra_predictor_corrector.jl".MehrotraPredictorCorrector.Solver([-1 -1 0 0 0 0; 1 0 1 0 0 0; 0 1 -1 0 0 0; 1 0 0 1 0 0; 0 1 0 0 1 0; 0 0 1 0 0 1], [-1, 1, 0, 1, 1, 1], [1, 1, 1, 0, 0, 0], [0.1, 0.9, 0.9, 0.9, 0.1, 0.1], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.009999999999999995, 0.010000000000000009, 0.010000000000000009, 0.010000000000000009, 0.009999999999999995, 0.009999999999999995])
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:51
+┌ Debug: [iter]
+│   t = 1
+│   s.x = [0.1, 0.9, 0.9, 0.9, 0.1, 0.1]
+│   s.y = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+│   s.s = [0.009999999999999995, 0.010000000000000009, 0.010000000000000009, 0.010000000000000009, 0.009999999999999995, 0.009999999999999995]
+│   expected_niters = nothing
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:56
+┌ Debug: [iter]
+│   mu = 0.0050000000000000044
+│   rd = [-0.99, -0.99, -0.99, 0.010000000000000009, 0.009999999999999995, 0.009999999999999995]
+│   rp = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+│   rc = [0.0009999999999999996, 0.009000000000000008, 0.009000000000000008, 0.009000000000000008, 0.0009999999999999996, 0.0009999999999999996]
+│   norm(rd, Inf) = 0.99
+│   norm(rp, Inf) = 0.0
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:59
+┌ Debug: [kkt error]
+│   KKT * [dx; dy; ds] + [rd; rp; rc] = [0.0, 0.0, 0.0, 0.0, -1.3877787807814457e-17, -1.3877787807814457e-17, 8.482103908136196e-14, -4.884981308350689e-15, -7.993605777301127e-14, 4.884981308350689e-15, -6.661338147750939e-14, 3.108624468950438e-14, -1.3010426069826053e-18, 0.0, 0.0, 0.0, -1.3010426069826053e-18, -1.3010426069826053e-18]
+└ @ Main.var"/Users/pmz/gitspace/ipm/mehrotra_predictor_corrector.jl".MehrotraPredictorCorrector /Users/pmz/gitspace/ipm/mehrotra_predictor_corrector.jl:105
+┌ Debug: [kkt error]
+│   KKT * [dx; dy; ds] + [rd; rp; rc] = [0.0, 0.0, -1.1102230246251565e-16, 0.0, 3.191891195797325e-16, 4.3021142204224816e-16, 5.684341886080802e-14, -1.4210854715202004e-14, -4.263256414560601e-14, -4.263256414560601e-14, -4.263256414560601e-14, 1.4210854715202004e-14, 0.0, 0.0, -2.7755575615628914e-17, -1.3877787807814457e-17, 0.0, 0.0]
+└ @ Main.var"/Users/pmz/gitspace/ipm/mehrotra_predictor_corrector.jl".MehrotraPredictorCorrector /Users/pmz/gitspace/ipm/mehrotra_predictor_corrector.jl:105
+┌ Debug: [iter]
+│   ap = 0.00941860465116279
+│   ad = 0.9
+│   dx = [85.99999999999996, -86.00000000000001, -85.99999999999997, -86.0, 85.99999999999997, 85.99999999999999]
+│   dy = [-0.6666666666667016, 0.6666666666667371, -3.8729957602494666e-14, -1.0333333333333328, -0.7000000000000014, -0.700000000000109]
+│   ds = [0.689999999999894, 1.0233333333333385, 1.023333333333333, 1.0233333333333328, 0.6900000000000017, 0.6900000000001094]
+└ @ Main.var"/Users/pmz/gitspace/ipm/mehrotra_predictor_corrector.jl".MehrotraPredictorCorrector /Users/pmz/gitspace/ipm/mehrotra_predictor_corrector.jl:125
+┌ Debug: [iter]
+│   del_mu = -0.3240000000000007
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:70
+┌ Debug: [iter]
+│   t = 2
+│   s.x = [0.9099999999999995, 0.08999999999999997, 0.09000000000000041, 0.09000000000000019, 0.9099999999999996, 0.9099999999999997]
+│   s.y = [-0.6000000000000315, 0.6000000000000635, -3.48569618422452e-14, -0.9299999999999995, -0.6300000000000012, -0.6300000000000981]
+│   s.s = [0.6309999999999046, 0.9310000000000047, 0.9309999999999997, 0.9309999999999995, 0.6310000000000016, 0.6310000000000985]
+│   expected_niters = nothing
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:56
+┌ Debug: [iter]
+│   mu = 0.3290000000000007
+│   rd = [-0.09899999999999987, -0.09899999999999987, -0.09900000000000009, 0.0010000000000000009, 0.001000000000000334, 0.001000000000000334]
+│   rp = [5.551115123125783e-16, -1.1102230246251565e-16, -4.440892098500626e-16, -3.3306690738754696e-16, -4.440892098500626e-16, 0.0]
+│   rc = [0.5742099999999128, 0.08379000000000039, 0.08379000000000036, 0.08379000000000013, 0.5742100000000011, 0.5742100000000895]
+│   norm(rd, Inf) = 0.09900000000000009
+│   norm(rp, Inf) = 5.551115123125783e-16
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:59
+┌ Debug: [kkt error]
+│   KKT * [dx; dy; ds] + [rd; rp; rc] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -6.349087922075114e-16, 7.147060721024445e-16, -7.979727989493313e-17, 4.40619762898109e-16, -2.0122792321330962e-16, -1.8388068845354155e-16, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+└ @ Main.var"/Users/pmz/gitspace/ipm/mehrotra_predictor_corrector.jl".MehrotraPredictorCorrector /Users/pmz/gitspace/ipm/mehrotra_predictor_corrector.jl:105
+┌ Debug: [kkt error]
+│   KKT * [dx; dy; ds] + [rd; rp; rc] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 6.938893903907228e-18, 1.249000902703301e-16, -1.3183898417423734e-16, -1.1796119636642288e-16, -3.3306690738754696e-16, -4.649058915617843e-16, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+└ @ Main.var"/Users/pmz/gitspace/ipm/mehrotra_predictor_corrector.jl".MehrotraPredictorCorrector /Users/pmz/gitspace/ipm/mehrotra_predictor_corrector.jl:105
+┌ Debug: [iter]
+│   ap = 0.9
+│   ad = 0.8808907624782139
+│   dx = [0.05095636148600675, -0.0509563614860062, -0.05095636148600651, -0.05095636148600653, 0.05095636148600631, 0.05095636148600605]
+│   dy = [-0.0666666666666351, 0.06666666666660098, 3.3889557826682903e-14, 0.6103550028257652, 0.6436883361591004, 0.6436883361591995]
+│   ds = [-0.6446883361590013, -0.6113550028257695, -0.6113550028257665, -0.6113550028257652, -0.6446883361591007, -0.6446883361591998]
+└ @ Main.var"/Users/pmz/gitspace/ipm/mehrotra_predictor_corrector.jl".MehrotraPredictorCorrector /Users/pmz/gitspace/ipm/mehrotra_predictor_corrector.jl:125
+┌ Debug: [iter]
+│   del_mu = 0.2901810774787319
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:70
+┌ Debug: [iter]
+│   t = 3
+│   s.x = [0.9558607253374055, 0.04413927466259439, 0.044139274662594555, 0.04413927466259431, 0.9558607253374053, 0.9558607253374052]
+│   s.y = [-0.6587260508318846, 0.6587260508318865, -5.003963408248977e-15, -0.3923439161784189, -0.06298089076247848, -0.06298089076248803]
+│   s.s = [0.06309999999999094, 0.392463025415942, 0.3924630254159397, 0.3924630254159407, 0.06310000000000027, 0.06310000000000993]
+│   expected_niters = nothing
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:56
+┌ Debug: [iter]
+│   mu = 0.03881892252126881
+│   rd = [-0.01179181451465694, -0.011791814514656829, -0.011791814514656829, 0.00011910923752178615, 0.00011910923752178615, 0.00011910923752189717]
+│   rp = [1.1102230246251565e-16, 0.0, -1.6653345369377348e-16, -2.220446049250313e-16, -3.3306690738754696e-16, -2.220446049250313e-16]
+│   rc = [0.06031481176878163, 0.017323033273747027, 0.01732303327374699, 0.01732303327374694, 0.06031481176879053, 0.060314811768799756]
+│   norm(rd, Inf) = 0.01179181451465694
+│   norm(rp, Inf) = 3.3306690738754696e-16
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:59
+┌ Debug: [iter end]
+│   s.x = [0.9558607253374055, 0.04413927466259439, 0.044139274662594555, 0.04413927466259431, 0.9558607253374053, 0.9558607253374052]
+│   s.y = [-0.6587260508318846, 0.6587260508318865, -5.003963408248977e-15, -0.3923439161784189, -0.06298089076247848, -0.06298089076248803]
+│   s.s = [0.06309999999999094, 0.392463025415942, 0.3924630254159397, 0.3924630254159407, 0.06310000000000027, 0.06310000000000993]
+│   optimal = true
+│   niters = 2
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:72

@@ -91,14 +91,25 @@ function PlotMu(events, phase)
     end
   end
 
-  p = plot!(t, mu, yscale = :log10, label = "mu (" * phase * ")", primary = true)
-  p = scatter!(t, mu, yscale = :log10, primary = false)
+  viz = function (var, name)
+    ind = var .> 0
+    p = plot!(
+      t[ind],
+      var[ind],
+      yscale = :log10,
+      label = name * " (" * phase * ")",
+      primary = true,
+      legend = :outerbottom,
+      legend_columns=3
+    )
+    p = scatter!(t[ind], var[ind], yscale = :log10, primary = false)
+    return p
+  end
 
-  p = plot!(t, rd, yscale = :log10, label = "rd (" * phase * ")", primary = true)
-  p = scatter!(t, rd, yscale = :log10, primary = false)
+  p = viz(mu, "mu")
+  p = viz(rd, "rd")
+  p = viz(rp, "rp")
 
-  p = plot!(t, rp, yscale = :log10, label = "rp (" * phase * ")", primary = true)
-  p = scatter!(t, rp, yscale = :log10, primary = false)
   return p
 end
 
