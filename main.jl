@@ -1,14 +1,17 @@
+using FromFile
 using ArgParse
 using LinearAlgebra
 using Logging
 using Setfield
+using Printf
+using Statistics
 
-include("dimacs.jl")
-include("graph.jl")
-include("ipm.jl")
-include("augmentations.jl")
-# include("long_step_path_following.jl")
-include("mehrotra_predictor_corrector.jl")
+@from "graph.jl" import Graphs.McfpNet
+@from "dimacs.jl" import Dimacs.ReadDimacs
+# include("ipm.jl")
+# include("augmentations.jl")
+@from "long_step_path_following.jl" import LongStepPathFollowing as lpf
+@from "mehrotra_predictor_corrector.jl" import MehrotraPredictorCorrector as mpc
 
 function parse_cmdargs()
   s = ArgParseSettings()
@@ -33,17 +36,20 @@ function setup_logging(logpath::String)
 end
 
 function do_netw(netw::McfpNet, start = nothing)
-  TOL = 1e-6
+  TOL = 1e-1
 
-  s = from_netw(netw, start)
+  alg = lpf
+
+  s = alg.from_netw(netw, start)
+  s = @set s.mu_tol = TOL
   @debug "[init]" s
 
-  @debug "[iter start]" s.x s.y s.s
   optimal, niters = false, 0
   for t = 1:20
-    @debug "[iter]" t s.x s.y s.s
+    expected_niters = alg.expected_iteration_count(s)
+    @debug "[iter]" t s.x s.y s.s expected_niters
     mu = mean(s.x .* s.s)
-    rd, rp, rc = kkt_residual(s)
+    rd, rp, rc = alg.kkt_residual(s)
     @debug "[iter]" mu rd rp rc
 
     if mu < TOL && norm(rd, Inf) < TOL && norm(rp, Inf) < TOL
@@ -51,10 +57,18 @@ function do_netw(netw::McfpNet, start = nothing)
       break
     end
 
-    s = single_step(s)
+    s = alg.single_step(s)
     niters += 1
+
+    del_mu = mu - mean(s.x .* s.s)
+    @debug "[iter]" del_mu
   end
   @debug "[iter end]" s.x s.y s.s optimal niters
+  if !optimal
+    mu = mean(s.x .* s.s)
+    rd, rp, rc = alg.kkt_residual(s)
+    @debug "[iter]" mu rd rp rc
+  end
   return s
 end
 

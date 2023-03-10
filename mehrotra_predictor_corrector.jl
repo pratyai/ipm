@@ -1,11 +1,14 @@
-include("graph.jl")
+module MehrotraPredictorCorrector
 
+using FromFile
+
+@from "graph.jl" import Graphs.McfpNet
 using LinearAlgebra
 using Statistics
 import Base.@kwdef
 using Setfield
 
-@kwdef struct MehrotraPC
+@kwdef struct Solver
   # fixed parameters for the problem
   A::AbstractMatrix{<:Number}
   b::AbstractVector{<:Number}
@@ -17,7 +20,7 @@ using Setfield
   s::AbstractVector{<:Number}
 end
 
-function kkt_residual(s::MehrotraPC)
+function kkt_residual(s::Solver)
   rd = s.A' * s.y + s.s - s.c  # dual
   rp = s.A * s.x - s.b  # primal
   rc = s.x .* s.s  # center
@@ -25,7 +28,7 @@ function kkt_residual(s::MehrotraPC)
 end
 
 function big_kkt_solve(
-  s::MehrotraPC,
+  s::Solver,
   rd::AbstractVector{<:Number},
   rp::AbstractVector{<:Number},
   rc::AbstractVector{<:Number},
@@ -40,11 +43,12 @@ function big_kkt_solve(
   ]
   r = -[rd; rp; rc]
   dxys = pinv(KKT) * r
+  @debug "[kkt error]" (KKT * dxys - r)
   dx, dy, ds = dxys[1:n], dxys[n+1:n+m], dxys[n+m+1:n+m+n]
   return dx, dy, ds
 end
 
-function single_step(s::MehrotraPC)
+function single_step(s::Solver)
   rd, rp, rc = kkt_residual(s)
   dxf, dyf, dsf = big_kkt_solve(s, rd, rp, rc)
 
@@ -68,7 +72,7 @@ function single_step(s::MehrotraPC)
   return s
 end
 
-function from_netw(netw::McfpNet, start::Union{MehrotraPC,Nothing} = nothing)
+function from_netw(netw::McfpNet, start::Union{Solver,Nothing} = nothing)
   A = netw.G.IncidenceMatrix
   b = netw.Demand
   u = netw.Cap
@@ -79,7 +83,9 @@ function from_netw(netw::McfpNet, start::Union{MehrotraPC,Nothing} = nothing)
     start == nothing ? (0.1 * ones(n), zeros(m), 0.1 * ones(n)) :
     (start.x, start.y, start.s)
 
-  S = MehrotraPC(A = [A 0A; I I], b = [b; u], c = [c; 0c], x = x, y = y, s = s)
+  S = Solver(A = [A 0A; I I], b = [b; u], c = [c; 0c], x = x, y = y, s = s)
 
   return S
 end
+
+end  # module MehrotraPredictorCorrector

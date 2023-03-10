@@ -1,3 +1,6 @@
+module Graphs
+
+using FromFile
 using SparseArrays
 using DataStructures
 using LinkCutTrees
@@ -308,3 +311,5 @@ function ComputeIntegralFlow(netw::McfpNet, x::AbstractVector{<:Number})
   end
   return Int.(round.(x))
 end
+
+end  # module Graph

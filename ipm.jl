@@ -1,4 +1,6 @@
-include("graph.jl")
+using FromFile
+
+@from "graph.jl" import Graphs
 
 using LinearAlgebra
 import Base.@kwdef

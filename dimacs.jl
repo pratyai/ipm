@@ -1,4 +1,8 @@
-include("graph.jl")
+module Dimacs
+
+using FromFile
+
+@from "graph.jl" import Graphs.FromEdgeList, Graphs.McfpNet
 
 using Scanf
 using Printf
@@ -46,3 +50,5 @@ function WriteDimacs(path::String, G::McfpNet, flow::AbstractVector{Int})
     end
   end
 end
+
+end  # module Dimacs

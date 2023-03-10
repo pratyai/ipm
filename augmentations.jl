@@ -1,4 +1,6 @@
-include("graph.jl")
+using FromFile
+
+@from "graph.jl" import Graphs
 
 function add_a_star_spanning_tree(netw::McfpNet, cost::Int)
   #=

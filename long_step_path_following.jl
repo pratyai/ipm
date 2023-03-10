@@ -1,15 +1,19 @@
-include("graph.jl")
+module LongStepPathFollowing
 
+using FromFile
+
+@from "graph.jl" import Graphs.McfpNet
 using LinearAlgebra
 using Statistics
 import Base.@kwdef
 using Setfield
 
-@kwdef struct LongStepPathFollower
+@kwdef struct Solver
   # tuning parameters
   gamma::Number = 1e-3
   sigma_min::Number = 0.5
   sigma_max::Number = 0.9
+  mu_tol::Number = 1e-6
 
   # fixed parameters for the problem
   A::AbstractMatrix{<:Number}
@@ -22,7 +26,7 @@ using Setfield
   s::AbstractVector{<:Number}
 end
 
-function kkt_residual(s::LongStepPathFollower)
+function kkt_residual(s::Solver)
   rd = s.A' * s.y + s.s - s.c  # dual
   rp = s.A * s.x - s.b  # primal
   rc = s.x .* s.s  # center
@@ -30,7 +34,7 @@ function kkt_residual(s::LongStepPathFollower)
 end
 
 function big_kkt_solve(
-  s::LongStepPathFollower,
+  s::Solver,
   rd::AbstractVector{<:Number},
   rp::AbstractVector{<:Number},
   rc::AbstractVector{<:Number},
@@ -45,6 +49,7 @@ function big_kkt_solve(
   ]
   r = -[rd; rp; rc]
   dxys = pinv(KKT) * r
+  @debug "[kkt error]" (KKT * dxys - r)
   dx, dy, ds = dxys[1:n], dxys[n+1:n+m], dxys[n+m+1:n+m+n]
   return dx, dy, ds
 end
@@ -60,7 +65,7 @@ function is_good_neighbourhood(
 end
 
 function find_good_neighbourhood(
-  s::LongStepPathFollower,
+  s::Solver,
   dx::AbstractVector{<:Number},
   dy::AbstractVector{<:Number},
   ds::AbstractVector{<:Number},
@@ -81,7 +86,7 @@ function find_good_neighbourhood(
   return lo
 end
 
-function single_step(s::LongStepPathFollower)
+function single_step(s::Solver)
   # select some sigma in (0,1)
   sigma = s.sigma_max
   mu = mean(s.x .* s.s)
@@ -95,10 +100,12 @@ function single_step(s::LongStepPathFollower)
   s = @set s.x += a * dx
   s = @set s.y += a * dy
   s = @set s.s += a * ds
+  @assert is_good_neighbourhood(s.x, s.y, s.s, s.gamma)
+
   return s
 end
 
-function from_netw(netw::McfpNet, start::Union{LongStepPathFollower,Nothing} = nothing)
+function from_netw(netw::McfpNet, start::Union{Solver,Nothing} = nothing)
   A = netw.G.IncidenceMatrix
   b = netw.Demand
   u = netw.Cap
@@ -109,8 +116,26 @@ function from_netw(netw::McfpNet, start::Union{LongStepPathFollower,Nothing} = n
     start == nothing ? (0.1 * ones(n), zeros(m), 0.1 * ones(n)) :
     (start.x, start.y, start.s)
 
-  S = LongStepPathFollower(A = [A 0A; I I], b = [b; u], c = [c; 0c], x = x, y = y, s = s)
+  S = Solver(A = [A 0A; I I], b = [b; u], c = [c; 0c], x = x, y = y, s = s)
   @assert is_good_neighbourhood(x, y, s, S.gamma)
 
   return S
 end
+
+function expected_iteration_count(s::Solver)
+  n = length(s.x)
+  delta =
+    (2^1.5 * s.gamma * (1 - s.gamma) / (1 + s.gamma)) *
+    min(s.sigma_min * (1 - s.sigma_min), s.sigma_max * (1 - s.sigma_max))
+  mu = mean(s.x .* s.s)
+  log_epsilon = abs(log(s.mu_tol / mu))
+  niters = Int.(ceil(n * log_epsilon / delta))
+
+  if niters <= 1 || niters > 100
+    @debug "[lpf]" n delta mu log_epsilon niters
+  end
+
+  return niters
+end
+
+end  # module LongStepPathFollowing
