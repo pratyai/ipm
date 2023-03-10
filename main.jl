@@ -1,4 +1,5 @@
 using FromFile
+
 using ArgParse
 using LinearAlgebra
 using Logging
@@ -38,19 +39,21 @@ end
 function do_netw(netw::McfpNet, start = nothing)
   TOL = 1e-1
 
-  alg = lpf
+  alg = mpc
 
   s = alg.from_netw(netw, start)
-  s = @set s.mu_tol = TOL
+  if alg == lpf
+    s = @set s.mu_tol = TOL
+  end
   @debug "[init]" s
 
   optimal, niters = false, 0
   for t = 1:20
-    expected_niters = alg.expected_iteration_count(s)
+    expected_niters = alg == lpf ? lpf.expected_iteration_count(s) : nothing
     @debug "[iter]" t s.x s.y s.s expected_niters
     mu = mean(s.x .* s.s)
     rd, rp, rc = alg.kkt_residual(s)
-    @debug "[iter]" mu rd rp rc
+    @debug "[iter]" mu rd rp rc norm(rd, Inf) norm(rp, Inf)
 
     if mu < TOL && norm(rd, Inf) < TOL && norm(rp, Inf) < TOL
       optimal = true
@@ -96,7 +99,7 @@ function main()
 
   @info "[cmdline args]" args
   netw = ReadDimacs(args["i"])
-  @debug netw.G netw.Cost netw.Cap netw.Demand
+  @debug "[mcfp]" netw.G netw.Cost netw.Cap netw.Demand
   p1s = do_phase_1(netw)
   p2s = do_phase_2(netw, p1s)
 

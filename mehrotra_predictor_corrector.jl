@@ -48,6 +48,29 @@ function big_kkt_solve(
   return dx, dy, ds
 end
 
+function small_kkt_solve(
+  s::Solver,
+  rd::AbstractVector{<:Number},
+  rp::AbstractVector{<:Number},
+  rc::AbstractVector{<:Number},
+)
+  n, m = length(rd), length(rp)  # var, con
+  S, X = diagm(s.s), diagm(s.x)
+  Sg = diagm(s.s ./ s.x)
+  Z = zeros(m, n)
+  KKT = [
+    Sg s.A'
+    s.A 0I
+  ]
+  rdc = rd + rc ./ s.x
+  r = -[rdc; rp]
+  dxy = pinv(KKT) * r
+  @debug "[kkt error]" (KKT * dxy - r)
+  dx, dy = dxy[1:n], dxy[n+1:n+m]
+  ds = -(rc + dx .* s.s) ./ s.x
+  return dx, dy, ds
+end
+
 function single_step(s::Solver)
   rd, rp, rc = kkt_residual(s)
   dxf, dyf, dsf = big_kkt_solve(s, rd, rp, rc)

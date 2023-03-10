@@ -1,7 +1,8 @@
 ┌ Info: [cmdline args]
 │   args = Dict{String, Any}("l" => "logs/0.dimacs.log", "i" => "data/0.dimacs")
 └ @ Main /Users/pmz/gitspace/ipm/main.jl:97
-┌ Debug: Main.var"/Users/pmz/gitspace/ipm/graph.jl".Graphs.Graph(2, 1, [1 2], [-1; 1;;], [0 1; 0 0])
+┌ Debug: [mcfp]
+│   netw.G = Main.var"/Users/pmz/gitspace/ipm/graph.jl".Graphs.Graph(2, 1, [1 2], [-1; 1;;], [0 1; 0 0])
 │   netw.Cost = [1]
 │   netw.Cap = [1]
 │   netw.Demand = [-1, 1]
@@ -17,7 +18,7 @@
 │   mu = 0.010000000000000002
 │   log_epsilon = 2.3025850929940455
 │   niters = 18128
-└ @ Main.var"/Users/pmz/gitspace/ipm/long_step_path_following.jl".LongStepPathFollowing /Users/pmz/gitspace/ipm/long_step_path_following.jl:135
+└ @ Main.var"/Users/pmz/gitspace/ipm/long_step_path_following.jl".LongStepPathFollowing /Users/pmz/gitspace/ipm/long_step_path_following.jl:158
 ┌ Debug: [iter]
 │   t = 1
 │   s.x = [0.1, 0.1]
@@ -39,7 +40,7 @@
 │   dx = [0.8999999999999992, -0.10000000000000009]
 │   dy = [-0.4999999999999999, 0.49999999999999967, -0.18999999999999986]
 │   ds = [-0.9100000000000001, 0.08999999999999944]
-└ @ Main.var"/Users/pmz/gitspace/ipm/long_step_path_following.jl".LongStepPathFollowing /Users/pmz/gitspace/ipm/long_step_path_following.jl:99
+└ @ Main.var"/Users/pmz/gitspace/ipm/long_step_path_following.jl".LongStepPathFollowing /Users/pmz/gitspace/ipm/long_step_path_following.jl:122
 ┌ Debug: [iter]
 │   del_mu = 0.005106730969999267
 └ @ Main /Users/pmz/gitspace/ipm/main.jl:64
@@ -49,7 +50,7 @@
 │   mu = 0.004893269030000735
 │   log_epsilon = 3.0173095925641995
 │   niters = 23754
-└ @ Main.var"/Users/pmz/gitspace/ipm/long_step_path_following.jl".LongStepPathFollowing /Users/pmz/gitspace/ipm/long_step_path_following.jl:135
+└ @ Main.var"/Users/pmz/gitspace/ipm/long_step_path_following.jl".LongStepPathFollowing /Users/pmz/gitspace/ipm/long_step_path_following.jl:158
 ┌ Debug: [iter]
 │   t = 2
 │   s.x = [0.19887609481811516, 0.08901376724243164]
@@ -71,7 +72,7 @@
 │   dx = [0.8011239051818845, -0.0890137672424316]
 │   dy = [-0.013728908142164351, 0.013728908142164317, -0.13848860988117118]
 │   ds = [0.02201702635441075, 0.04947484263873933]
-└ @ Main.var"/Users/pmz/gitspace/ipm/long_step_path_following.jl".LongStepPathFollowing /Users/pmz/gitspace/ipm/long_step_path_following.jl:99
+└ @ Main.var"/Users/pmz/gitspace/ipm/long_step_path_following.jl".LongStepPathFollowing /Users/pmz/gitspace/ipm/long_step_path_following.jl:122
 ┌ Debug: [iter]
 │   del_mu = -0.006117983040295996
 └ @ Main /Users/pmz/gitspace/ipm/main.jl:64
@@ -81,7 +82,7 @@
 │   mu = 0.011011252070296731
 │   log_epsilon = 2.2062525205297367
 │   niters = 17369
-└ @ Main.var"/Users/pmz/gitspace/ipm/long_step_path_following.jl".LongStepPathFollowing /Users/pmz/gitspace/ipm/long_step_path_following.jl:135
+└ @ Main.var"/Users/pmz/gitspace/ipm/long_step_path_following.jl".LongStepPathFollowing /Users/pmz/gitspace/ipm/long_step_path_following.jl:158
 ┌ Debug: [iter]
 │   t = 3
 │   s.x = [0.9993773307965054, 6.918546705496353e-5]
@@ -113,7 +114,7 @@
 │   mu = 0.011011252070296731
 │   log_epsilon = 2.2062525205297367
 │   niters = 17369
-└ @ Main.var"/Users/pmz/gitspace/ipm/long_step_path_following.jl".LongStepPathFollowing /Users/pmz/gitspace/ipm/long_step_path_following.jl:135
+└ @ Main.var"/Users/pmz/gitspace/ipm/long_step_path_following.jl".LongStepPathFollowing /Users/pmz/gitspace/ipm/long_step_path_following.jl:158
 ┌ Debug: [iter]
 │   t = 1
 │   s.x = [0.9993773307965054, 6.918546705496353e-5]
@@ -135,7 +136,7 @@
 │   dx = [0.0006226692034951864, -6.918546705669877e-5]
 │   dy = [-72.12606537229385, 72.12606537237221, -143.2400773129696]
 │   ds = [-0.012122617163519003, 143.2400081275026]
-└ @ Main.var"/Users/pmz/gitspace/ipm/long_step_path_following.jl".LongStepPathFollowing /Users/pmz/gitspace/ipm/long_step_path_following.jl:99
+└ @ Main.var"/Users/pmz/gitspace/ipm/long_step_path_following.jl".LongStepPathFollowing /Users/pmz/gitspace/ipm/long_step_path_following.jl:122
 ┌ Debug: [iter]
 │   del_mu = 0.006054447189888937
 └ @ Main /Users/pmz/gitspace/ipm/main.jl:64
@@ -145,7 +146,7 @@
 │   mu = 0.004956804880407794
 │   log_epsilon = 3.004408830159761
 │   niters = 23653
-└ @ Main.var"/Users/pmz/gitspace/ipm/long_step_path_following.jl".LongStepPathFollowing /Users/pmz/gitspace/ipm/long_step_path_following.jl:135
+└ @ Main.var"/Users/pmz/gitspace/ipm/long_step_path_following.jl".LongStepPathFollowing /Users/pmz/gitspace/ipm/long_step_path_following.jl:158
 ┌ Debug: [iter]
 │   t = 2
 │   s.x = [0.9999996882425964, 3.4639709840052126e-8]
