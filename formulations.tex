@@ -117,4 +117,30 @@ $$A = \begin{bmatrix}\mathbf{A} & \bm{0} \\ \mathbf{I} & \mathbf{I}\end{bmatrix}
 
 $$A = \begin{bmatrix}\mathbf{A} & \bm{0} \\ \mathbf{I} & \mathbf{I}\end{bmatrix} ~~~|~~~ \lambda = \begin{bmatrix}\mathbf{y} \\ \mathbf{y}_u\end{bmatrix} ~~~|~~~ b = \begin{bmatrix}\mathbf{b} \\ \mathbf{u}\end{bmatrix} ~~~|~~~ c = \begin{bmatrix}\mathbf{c} \\ \bm{0}\end{bmatrix} ~~~|~~~ s = \begin{bmatrix}\mathbf{z}_1 \\ \mathbf{z}_2\end{bmatrix}$$
 
+\subsection{Big KKT}
+
+$$\begin{bmatrix}
+0 & A^T & I \\
+A & 0 & 0 \\
+S & 0 & X
+\end{bmatrix}
+\begin{bmatrix}d_x \\ d_y \\ d_s\end{bmatrix} = 
+\begin{bmatrix}-r_d \\ -r_p \\ -r_c\end{bmatrix}$$
+
+\subsection{Small KKT}
+
+$$\begin{bmatrix}-X^{-1}S & A^T \\ A & 0\end{bmatrix}
+\begin{bmatrix}d_x \\ d_y\end{bmatrix} = 
+\begin{bmatrix}-r_d + X^{-1}r_c \\ -r_p\end{bmatrix}$$
+$$d_s = -X^{-1}(r_c + Sd_x)$$
+
+\subsection{No KKT}
+
+Let $L := AS^{-1}XA^T$. Then,
+\begin{align*}
+d_y &= L^+(-r_p - AS^{-1}Xr_d + AS^{-1}r_c) \\
+d_x &= -S^{-1}(r_c - X(r_d + A^Td-y))\\
+d_s &= -X^{-1}(r_c + Sd_x)
+\end{align*}
+
 \end{document}
