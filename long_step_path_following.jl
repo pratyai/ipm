@@ -49,10 +49,6 @@ function big_kkt_solve(
   return dx, dy, ds
 end
 
-function search_dir(s::LongStepPathFollower, sigma::Number)
-  return big_kkt_solve(s, rd, rp, rc)
-end
-
 function is_good_neighbourhood(
   x::AbstractVector{<:Number},
   y::AbstractVector{<:Number},
@@ -102,16 +98,16 @@ function single_step(s::LongStepPathFollower)
   return s
 end
 
-function from_netw(netw::McfpNet)
+function from_netw(netw::McfpNet, start::Union{LongStepPathFollower,Nothing} = nothing)
   A = netw.G.IncidenceMatrix
   b = netw.Demand
   u = netw.Cap
   c = netw.Cost
 
   n, m = netw.G.m * 2, netw.G.n + netw.G.m  # var, con
-  x = 0.1 * ones(n)
-  y = zeros(m)
-  s = 0.1 * ones(n)
+  x, y, s =
+    start == nothing ? (0.1 * ones(n), zeros(m), 0.1 * ones(n)) :
+    (start.x, start.y, start.s)
 
   S = LongStepPathFollower(A = [A 0A; I I], b = [b; u], c = [c; 0c], x = x, y = y, s = s)
   @assert is_good_neighbourhood(x, y, s, S.gamma)
