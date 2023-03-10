@@ -1,6 +1,6 @@
 using FromFile
 
-@from "graph.jl" import Graphs
+@from "graph.jl" import Graphs.McfpNet, Graphs.FromEdgeList
 
 function add_a_star_spanning_tree(netw::McfpNet, cost::Int)
   #=

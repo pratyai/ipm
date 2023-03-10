@@ -161,4 +161,20 @@ function expected_iteration_count(s::Solver)
   return niters
 end
 
+function set_flow(s::Solver, netw::McfpNet, x::AbstractVector)
+  @assert length(x) == netw.G.m
+  @assert length(s.x) == 2 * netw.G.m
+  xu = netw.Cap - x
+  EPS = 1e-3
+  for i = 1:netw.G.m
+    if x[i] <= EPS
+      x[i], xu[i] = 0.1, netw.Cap[i] - 0.1
+    elseif xu[i] <= EPS
+      xu[i], x[i] = 0.1, netw.Cap[i] - 0.1
+    end
+  end
+  s = @set s.x = [x; xu]
+  return s
+end
+
 end  # module LongStepPathFollowing

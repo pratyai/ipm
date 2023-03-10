@@ -9,10 +9,10 @@ using Statistics
 
 @from "graph.jl" import Graphs.McfpNet
 @from "dimacs.jl" import Dimacs.ReadDimacs
-# include("ipm.jl")
-# include("augmentations.jl")
 @from "long_step_path_following.jl" import LongStepPathFollowing as lpf
 @from "mehrotra_predictor_corrector.jl" import MehrotraPredictorCorrector as mpc
+
+include("augmentations.jl")
 
 function parse_cmdargs()
   s = ArgParseSettings()
@@ -36,19 +36,22 @@ function setup_logging(logpath::String)
   return io
 end
 
-function do_netw(netw::McfpNet, start = nothing)
+function do_netw(netw::McfpNet; start = nothing, flow = nothing)
   TOL = 1e-1
 
   alg = mpc
 
   s = alg.from_netw(netw, start)
+  if flow != nothing
+    s = alg.set_flow(s, netw, flow)
+  end
   if alg == lpf
     s = @set s.mu_tol = TOL
   end
   @debug "[init]" s
 
   optimal, niters = false, 0
-  for t = 1:20
+  for t = 1:100
     expected_niters = alg == lpf ? lpf.expected_iteration_count(s) : nothing
     @debug "[iter]" t s.x s.y s.s expected_niters
     mu = mean(s.x .* s.s)
@@ -75,15 +78,15 @@ function do_netw(netw::McfpNet, start = nothing)
   return s
 end
 
-function do_phase_1(netw::McfpNet)
+function do_phase_1(netw::McfpNet, flow = nothing)
   @debug "[phase 1]"
   netw = @set netw.Cost = zeros(netw.G.m)
-  return do_netw(netw)
+  return do_netw(netw; flow = flow)
 end
 
 function do_phase_2(netw::McfpNet, p1s = nothing)
   @debug "[phase 2]"
-  return do_netw(netw, p1s)
+  return do_netw(netw; start = p1s)
 end
 
 function main()
@@ -99,8 +102,10 @@ function main()
 
   @info "[cmdline args]" args
   netw = ReadDimacs(args["i"])
+  netw, x = add_a_star_spanning_tree(netw, sum(netw.Cost))
   @debug "[mcfp]" netw.G netw.Cost netw.Cap netw.Demand
-  p1s = do_phase_1(netw)
+
+  p1s = do_phase_1(netw, x)
   p2s = do_phase_2(netw, p1s)
 
 
