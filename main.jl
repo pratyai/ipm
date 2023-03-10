@@ -6,6 +6,7 @@ include("dimacs.jl")
 include("graph.jl")
 include("ipm.jl")
 include("augmentations.jl")
+include("long_step_path_following.jl")
 
 function parse_cmdargs()
   s = ArgParseSettings()
@@ -29,6 +30,31 @@ function setup_logging(logpath::String)
   return io
 end
 
+function do_netw(netw::McfpNet)
+  TOL = 1e-1
+
+  s = from_netw(netw)
+  @debug "[init]" s
+
+  @debug "[iter start]" s.x s.y s.s
+  optimal, niters = false, 0
+  for t = 1:20
+    @debug "[iter]" t s.x s.y s.s
+    mu = mean(s.x .* s.s)
+    rd, rp, rc = kkt_residual(s)
+    @debug "[iter]" mu rd rp rc
+
+    if mu < TOL && norm(rd, Inf) < TOL && norm(rp, Inf) < TOL
+      optimal = true
+      break
+    end
+
+    s = single_step(s)
+    niters += 1
+  end
+  @debug "[iter end]" s.x s.y s.s optimal niters
+end
+
 function main()
   args = parse_cmdargs()
 
@@ -42,40 +68,9 @@ function main()
 
   @info "[cmdline args]" args
   netw = ReadDimacs(args["i"])
-  netw, x = add_a_star_spanning_tree(netw, sum(netw.Cost))
-  _, y, z_l, z_u = starting_point(netw)
   @debug netw.G netw.Cost netw.Cap netw.Demand
-  # x = zeros(netw.G.m)
+  do_netw(netw)
 
-  #=
-  nx = [0.14309825144033528, 0.17616890857498807, 0.29065460208646204, 0.5662471464732046, 0.03307065713465443, 0.5331764893385502]
-  @show nx
-  @show netw.G.IncidenceMatrix * nx - netw.Demand
-  nx = ComputeIntegralFlow(netw, nx)
-  @show nx
-  @show netw.G.IncidenceMatrix * nx - netw.Demand
-  return
-  =#
-
-  s = Solver(
-    netw = netw,
-    x = x,
-    y = y,
-    z_l = z_l,
-    z_u = z_u,
-    eps = 1e-1,
-    sigma = 1e-1,
-    primal_eps = 1e-1,
-    dual_eps = 1e-1,
-    gap_eps = 1e-1,
-  )
-
-  s_1 = with_cost(s, zeros(Int, s.netw.G.m))
-  s_1, optimal, iters = minimize(s_1, 20)
-  @info "[phase 1]" optimal iters
-  s_2 = with_solution(s, s_1.x, s_1.y, s_1.z_l, s_1.z_u)
-  s_2, optimal, iters = minimize(s_2, 50)
-  @info "[phase 2]" optimal iters
 
   if logio != nothing
     close(logio)

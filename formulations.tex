@@ -1,0 +1,120 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=.7in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{dot2texi}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{verbatim}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{parskip}
+\usepackage{float}
+\usepackage{mathtools}
+% \usepackage{minted}
+\usepackage{verbatim}
+\usepackage{listings}
+\usepackage{optidef}
+\usepackage{bm}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{hyperref}
+\usepackage{cleveref}
+\usepackage{enumerate}
+\restylefloat{figure}
+% \setminted{fontsize=\tiny,linenos=true,frame=single,breaklines=true}
+\allowdisplaybreaks
+
+\algrenewcommand{\Return}{\State\algorithmicreturn~}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+\title{IPM forumalations for thesis}
+\author{Pratyai Mazumder}
+
+\renewcommand{\thesubsection}{\thesection.\roman{subsection}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rgz}{\R_{>0}}
+\newcommand{\Rgez}{\R_{\geq0}}
+\newcommand{\Rlz}{\R_{<0}}
+\newcommand{\Rlez}{\R_{\leq0}}
+
+\begin{document}
+
+\maketitle
+
+\section{Original Problem}
+
+\subsection{Primal}
+
+\begin{mini}|s|
+{\mathbf{x}}{\mathbf{c}^T\mathbf{x}}{}{}
+\addConstraint{\mathbf{A}\mathbf{x}}{= \mathbf{b}}
+\addConstraint{\mathbf{x}}{\leq \bm{u}}
+\addConstraint{\mathbf{x}}{\in \Rgez^m}
+\end{mini}
+
+\subsection{Primal Standard Form}
+
+\begin{mini}|s|
+{\mathbf{x}}{\mathbf{c}^T\mathbf{x}}{}{}
+\addConstraint{\mathbf{A}\mathbf{x}}{= \mathbf{b}}
+\addConstraint{\mathbf{x} + \mathbf{x}_u}{= \bm{u}}
+\addConstraint{\mathbf{x}, \mathbf{x}_u}{\in \Rgez^m, \Rgez^m}
+\end{mini}
+
+\subsection{Dual}
+
+\begin{maxi}|s|
+{\mathbf{y}, \mathbf{y}_u}{\mathbf{b}^T\mathbf{y} - \mathbf{u}^T\mathbf{y}_u}{}{}
+\addConstraint{\mathbf{A}^T\mathbf{y} - \mathbf{y}_u}{\leq \mathbf{c}}
+\addConstraint{\mathbf{y}, \mathbf{y}_u}{\in \R^n, \Rgez^m}
+\end{maxi}
+
+\subsection{Dual Standard form}
+
+\begin{maxi}|s|
+{\mathbf{y}, \mathbf{y}_u}{\mathbf{b}^T\mathbf{y} - \mathbf{u}^T\mathbf{y}_u}{}{}
+\addConstraint{\mathbf{A}^T\mathbf{y} + \mathbf{y}_u + \mathbf{z}}{= \mathbf{c}}
+\addConstraint{\mathbf{y}, \mathbf{y}_u, \mathbf{z}}{\in \R^n, \Rgez^m, \Rgez^m}
+\end{maxi}
+
+But if we want $\mathbf{y}$ variables to be free, then dualize the standard from, then standardize again:
+\begin{maxi}|s|
+{\mathbf{y}, \mathbf{y}_u}{\mathbf{b}^T\mathbf{y} + \mathbf{u}^T\mathbf{y}_u}{}{}
+\addConstraint{\mathbf{A}^T\mathbf{y} + \mathbf{y}_u + \mathbf{z}_1}{= \mathbf{c}}
+\addConstraint{\mathbf{y}_u + \mathbf{z}_2}{= \bm{0}}
+\addConstraint{\mathbf{y}, \mathbf{y}_u, \mathbf{z}_1, \mathbf{z}_2}{\in \R^n, \R^m, \Rgez^m, \Rgez^m}
+\end{maxi}
+
+\section{Solver Forms}
+
+\subsection{Long Step Path Following Method}
+
+Ref: \href{https://link.springer.com/book/10.1007/978-0-387-40065-5}{Numerical Optimization (Alg. 14.2)}
+
+Due to the formulation, we have to work with the standard form.
+
+\subsubsection{Primal}
+
+\begin{mini}|s|
+{}{c^Tx}{}{}
+\addConstraint{Ax}{= b}
+\addConstraint{x}{\in \Rgez^n}
+\end{mini}
+
+$$A = \begin{bmatrix}\mathbf{A} & \bm{0} \\ \mathbf{I} & \mathbf{I}\end{bmatrix} ~~~|~~~ x = \begin{bmatrix}\mathbf{x} \\ \mathbf{x}_u\end{bmatrix} ~~~|~~~ b = \begin{bmatrix}\mathbf{b} \\ \mathbf{u}\end{bmatrix} ~~~|~~~ c = \begin{bmatrix}\mathbf{c} \\ \bm{0}\end{bmatrix}$$
+
+\subsubsection{Dual}
+
+\begin{maxi}|s|
+{}{b^Ty}{}{}
+\addConstraint{A^T\lambda + s}{= c}
+\addConstraint{\lambda, s}{\in \R^m, \Rgez^n}
+\end{maxi}
+
+$$A = \begin{bmatrix}\mathbf{A} & \bm{0} \\ \mathbf{I} & \mathbf{I}\end{bmatrix} ~~~|~~~ \lambda = \begin{bmatrix}\mathbf{y} \\ \mathbf{y}_u\end{bmatrix} ~~~|~~~ b = \begin{bmatrix}\mathbf{b} \\ \mathbf{u}\end{bmatrix} ~~~|~~~ c = \begin{bmatrix}\mathbf{c} \\ \bm{0}\end{bmatrix} ~~~|~~~ s = \begin{bmatrix}\mathbf{z}_1 \\ \mathbf{z}_2\end{bmatrix}$$
+
+\end{document}
