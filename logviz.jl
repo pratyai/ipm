@@ -5,7 +5,8 @@ using Setfield
 using DataStructures
 using Plots
 
-const EVENT_BASIC_RE = r"^┌[^└]*└[^\n]*$"ms
+gr()  # plot backend
+
 const EVENT_CLASS_RE = r"^┌ (?<level>[^:]+): (?:\[(?<tag>[a-zA-Z0-9 ]*)\])?.*$"ms
 const EVENT_PAYLOAD_RE = r"^│[ ]*(?<key>.*) = (?<val>.*)$"m
 
@@ -15,16 +16,40 @@ const EVENT_PAYLOAD_RE = r"^│[ ]*(?<key>.*) = (?<val>.*)$"m
   payload::Any
 end
 
-function from_str(e::AbstractString)::Event
+function from_str(e::AbstractString)::Union{Event, Nothing}
   level, tag = match(EVENT_CLASS_RE, e)
-  payload = [(m["key"], m["val"]) for m in eachmatch(EVENT_PAYLOAD_RE, e)]
-  return Event(level = level, tag = tag, payload = payload)
+  if level != "Info"
+    return nothing
+  end
+  try
+    payload = [(m["key"], m["val"]) for m in eachmatch(EVENT_PAYLOAD_RE, e)]
+    return Event(level = level, tag = tag, payload = payload)
+  catch e
+    @show e
+    return nothing
+  end
 end
 
 function ReadLogEvents(path::String)
-  content = read(path, String)
+  lines = readlines(path)
+  events = String[]
+  ce = nothing
+  for l in lines
+    if startswith(l, "┌")
+      if ce != nothing
+        append!(events, [ce])
+      end
+      ce = l
+    else
+      ce = ce * "\n" * l
+    end
+  end
+  if ce != nothing
+    append!(events, [ce])
+  end
 
-  events = [from_str(m.match) for m in eachmatch(EVENT_BASIC_RE, content)]
+  events = [from_str(e) for e in events]
+  events = [e for e in events if e != nothing]
   return events
 end
 
@@ -99,8 +124,6 @@ function PlotMu(events, phase)
       yscale = :log10,
       label = name * " (" * phase * ")",
       primary = true,
-      legend = :outerbottom,
-      legend_columns = 3,
     )
     p = scatter!(t[ind], var[ind], yscale = :log10, primary = false)
     return p
@@ -134,6 +157,8 @@ function main()
 
   events = LogViz.ReadLogEvents(args["i"])
   events = LogViz.NeatlyGroup(events)
+
+  p = plot(dpi = 300, size = (800, 640), legend = :outerbottom, legend_columns = 3)
   p = LogViz.PlotMu(events, "phase 1")
   p = LogViz.PlotMu(events, "phase 2")
   xlabel!("t")

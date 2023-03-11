@@ -110,6 +110,7 @@ function approx_kkt_solve(
   rd::AbstractVector{<:Number},
   rp::AbstractVector{<:Number},
   rc::AbstractVector{<:Number},
+  tol::Number = 1e-6,
 )
   dy = let s = s, rd = rd, rp = rp, rc = rc
     m = Int(length(s.x) / 2)
@@ -130,7 +131,7 @@ function approx_kkt_solve(
     L = A * diagm(d) * A'
     ainv = function (lap)
       adj = sparse(diagm(diag(lap)) - lap)
-      return approxchol_lap(adj; params = ApproxCholParams())
+      return approxchol_lap(adj; tol = tol, params = ApproxCholParams())
     end
     Li = ainv(L)
     # Li = r -> pinv(L) * r

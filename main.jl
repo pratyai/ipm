@@ -33,14 +33,14 @@ end
 function setup_logging(logpath::String)
   @printf "logging into: %s\n" logpath
   io = open(logpath, "w")
-  global_logger(SimpleLogger(io, Logging.Debug))
+  global_logger(SimpleLogger(io, Logging.Info))
   return io
 end
 
 function do_netw(netw::McfpNet; start = nothing, flow = nothing)
   TOL = 1e-1
 
-  alg = lpf
+  alg = mpc
 
   S = alg.from_netw(netw, start)
   if flow != nothing
@@ -55,10 +55,12 @@ function do_netw(netw::McfpNet; start = nothing, flow = nothing)
   for t = 1:100
     s = S.kkt
     expected_niters = alg == lpf ? lpf.expected_iteration_count(S) : nothing
-    @debug "[iter]" t s.x s.y s.s expected_niters
+    @info "[iter]" t
+    @debug "[iter]" s.x s.y s.s expected_niters
     mu = mean(s.x .* s.s)
     rd, rp, rc = kkt.kkt_residual(s)
-    @debug "[iter]" mu rd rp rc norm(rd, Inf) norm(rp, Inf)
+    @info "[iter]" mu norm(rd, Inf) norm(rp, Inf)
+    @debug "[iter]" rd rp rc
 
     if mu < TOL && norm(rd, Inf) < TOL && norm(rp, Inf) < TOL
       optimal = true
@@ -70,10 +72,11 @@ function do_netw(netw::McfpNet; start = nothing, flow = nothing)
 
     s = S.kkt
     del_mu = mu - mean(s.x .* s.s)
-    @debug "[iter]" del_mu
+    @info "[iter]" del_mu
   end
 
   s = S.kkt
+  @info "[iter end]" optimal niters
   @debug "[iter end]" s.x s.y s.s optimal niters
   if !optimal
     mu = mean(s.x .* s.s)
@@ -84,13 +87,13 @@ function do_netw(netw::McfpNet; start = nothing, flow = nothing)
 end
 
 function do_phase_1(netw::McfpNet, flow = nothing)
-  @debug "[phase 1]"
+  @info "[phase 1]"
   netw = @set netw.Cost = zeros(netw.G.m)
   return do_netw(netw; flow = flow)
 end
 
 function do_phase_2(netw::McfpNet, p1s = nothing)
-  @debug "[phase 2]"
+  @info "[phase 2]"
   return do_netw(netw; start = p1s)
 end
 
@@ -108,7 +111,7 @@ function main()
   @info "[cmdline args]" args
   netw = ReadDimacs(args["i"])
   netw, x = add_a_star_spanning_tree(netw, sum(netw.Cost))
-  @debug "[mcfp]" netw.G netw.Cost netw.Cap netw.Demand
+  @info "[mcfp]" netw.G netw.Cost netw.Cap netw.Demand
 
   p1s = do_phase_1(netw, x)
   p2s = do_phase_2(netw, p1s)
