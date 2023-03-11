@@ -3,6 +3,7 @@ module LongStepPathFollowing
 using FromFile
 
 @from "graph.jl" import Graphs.McfpNet
+@from "nocedal_kkt.jl" import NocedalKKT as kkt
 using LinearAlgebra
 using Statistics
 import Base.@kwdef
@@ -15,66 +16,7 @@ using Setfield
   sigma_max::Number = 0.9
   mu_tol::Number = 1e-6
 
-  # fixed parameters for the problem
-  A::AbstractMatrix{<:Number}
-  b::AbstractVector{<:Number}
-  c::AbstractVector{<:Number}
-
-  # iterates
-  x::AbstractVector{<:Number}
-  y::AbstractVector{<:Number}  # \lambda
-  s::AbstractVector{<:Number}
-end
-
-function kkt_residual(s::Solver)
-  rd = s.A' * s.y + s.s - s.c  # dual
-  rp = s.A * s.x - s.b  # primal
-  rc = s.x .* s.s  # center
-  return rd, rp, rc
-end
-
-function big_kkt_solve(
-  s::Solver,
-  rd::AbstractVector{<:Number},
-  rp::AbstractVector{<:Number},
-  rc::AbstractVector{<:Number},
-)
-  n, m = length(rd), length(rp)  # var, con
-  S, X = diagm(s.s), diagm(s.x)
-  Z = zeros(m, n)
-  KKT = [
-    0I s.A' I
-    s.A 0I Z
-    S Z' X
-  ]
-  r = -[rd; rp; rc]
-  dxys = pinv(KKT) * r
-  @debug "[kkt error]" (KKT * dxys - r)
-  dx, dy, ds = dxys[1:n], dxys[n+1:n+m], dxys[n+m+1:n+m+n]
-  return dx, dy, ds
-end
-
-function small_kkt_solve(
-  s::Solver,
-  rd::AbstractVector{<:Number},
-  rp::AbstractVector{<:Number},
-  rc::AbstractVector{<:Number},
-)
-  n, m = length(rd), length(rp)  # var, con
-  S, X = diagm(s.s), diagm(s.x)
-  Sg = diagm(s.s ./ s.x)
-  Z = zeros(m, n)
-  KKT = [
-    Sg s.A'
-    s.A 0I
-  ]
-  rdc = rd + rc ./ s.x
-  r = -[rdc; rp]
-  dxy = pinv(KKT) * r
-  @debug "[kkt error]" (KKT * dxy - r)
-  dx, dy = dxy[1:n], dxy[n+1:n+m]
-  ds = -(rc + dx .* s.s) ./ s.x
-  return dx, dy, ds
+  kkt::kkt.Solver
 end
 
 function is_good_neighbourhood(
@@ -88,11 +30,12 @@ function is_good_neighbourhood(
 end
 
 function find_good_neighbourhood(
-  s::Solver,
+  S::Solver,
   dx::AbstractVector{<:Number},
   dy::AbstractVector{<:Number},
   ds::AbstractVector{<:Number},
 )
+  s, gamma = S.kkt, S.gamma
   n, m = length(dx), length(dy)  # var, con
   EPS = 1e-6
   lo, hi = 0.0, 1.0
@@ -100,7 +43,7 @@ function find_good_neighbourhood(
   while hi - lo > EPS
     a = (lo + hi) / 2
     nx, ny, ns = s.x + a * dx, s.y + a * dy, s.s + a * ds
-    if is_good_neighbourhood(nx, ny, ns, s.gamma)
+    if is_good_neighbourhood(nx, ny, ns, gamma)
       lo = a
     else
       hi = a
@@ -109,23 +52,25 @@ function find_good_neighbourhood(
   return lo
 end
 
-function single_step(s::Solver)
+function single_step(S::Solver)
+  s = S.kkt
   # select some sigma in (0,1)
-  sigma = s.sigma_max
+  gamma, sigma = S.gamma, S.sigma_max
   mu = mean(s.x .* s.s)
 
-  rd, rp, rc = kkt_residual(s)
+  rd, rp, rc = kkt.kkt_residual(s)
   rc .-= sigma * mu
 
-  dx, dy, ds = big_kkt_solve(s, rd, rp, rc)
-  a = find_good_neighbourhood(s, dx, dy, ds)
+  dx, dy, ds = kkt.big_kkt_solve(s, rd, rp, rc)
+  a = find_good_neighbourhood(S, dx, dy, ds)
   @debug "[iter]" a dx dy ds
   s = @set s.x += a * dx
   s = @set s.y += a * dy
   s = @set s.s += a * ds
-  @assert is_good_neighbourhood(s.x, s.y, s.s, s.gamma)
+  @assert is_good_neighbourhood(s.x, s.y, s.s, gamma)
+  S = @set S.kkt = s
 
-  return s
+  return S
 end
 
 function from_netw(netw::McfpNet, start::Union{Solver,Nothing} = nothing)
@@ -137,31 +82,17 @@ function from_netw(netw::McfpNet, start::Union{Solver,Nothing} = nothing)
   n, m = netw.G.m * 2, netw.G.n + netw.G.m  # var, con
   x, y, s =
     start == nothing ? (0.1 * ones(n), zeros(m), 0.1 * ones(n)) :
-    (start.x, start.y, start.s)
+    (start.kkt.x, start.kkt.y, start.kkt.s)
 
-  S = Solver(A = [A 0A; I I], b = [b; u], c = [c; 0c], x = x, y = y, s = s)
+  S =
+    Solver(kkt = kkt.Solver(A = [A 0A; I I], b = [b; u], c = [c; 0c], x = x, y = y, s = s))
   @assert is_good_neighbourhood(x, y, s, S.gamma)
 
   return S
 end
 
-function expected_iteration_count(s::Solver)
-  n = length(s.x)
-  delta =
-    (2^1.5 * s.gamma * (1 - s.gamma) / (1 + s.gamma)) *
-    min(s.sigma_min * (1 - s.sigma_min), s.sigma_max * (1 - s.sigma_max))
-  mu = mean(s.x .* s.s)
-  log_epsilon = abs(log(s.mu_tol / mu))
-  niters = Int.(ceil(n * log_epsilon / delta))
-
-  if niters <= 1 || niters > 100
-    @debug "[lpf]" n delta mu log_epsilon niters
-  end
-
-  return niters
-end
-
-function set_flow(s::Solver, netw::McfpNet, x::AbstractVector)
+function set_flow(S::Solver, netw::McfpNet, x::AbstractVector)
+  s = S.kkt
   @assert length(x) == netw.G.m
   @assert length(s.x) == 2 * netw.G.m
   xu = netw.Cap - x
@@ -174,7 +105,26 @@ function set_flow(s::Solver, netw::McfpNet, x::AbstractVector)
     end
   end
   s = @set s.x = [x; xu]
-  return s
+  S = @set S.kkt = s
+  return S
+end
+
+function expected_iteration_count(S::Solver)
+  s = S.kkt
+  n = length(s.x)
+  gamma, sigma_min, sigma_max, mu_tol = S.gamma, S.sigma_min, S.sigma_max, S.mu_tol
+  delta =
+    (2^1.5 * gamma * (1 - gamma) / (1 + gamma)) *
+    min(sigma_min * (1 - sigma_min), sigma_max * (1 - sigma_max))
+  mu = mean(s.x .* s.s)
+  log_epsilon = abs(log(mu_tol / mu))
+  niters = Int.(ceil(n * log_epsilon / delta))
+
+  if niters <= 1 || niters > 100
+    @debug "[lpf]" n delta mu log_epsilon niters
+  end
+
+  return niters
 end
 
 end  # module LongStepPathFollowing

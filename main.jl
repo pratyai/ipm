@@ -11,6 +11,7 @@ using Statistics
 @from "dimacs.jl" import Dimacs.ReadDimacs
 @from "long_step_path_following.jl" import LongStepPathFollowing as lpf
 @from "mehrotra_predictor_corrector.jl" import MehrotraPredictorCorrector as mpc
+@from "nocedal_kkt.jl" import NocedalKKT as kkt
 
 include("augmentations.jl")
 
@@ -39,23 +40,24 @@ end
 function do_netw(netw::McfpNet; start = nothing, flow = nothing)
   TOL = 1e-1
 
-  alg = mpc
+  alg = lpf
 
-  s = alg.from_netw(netw, start)
+  S = alg.from_netw(netw, start)
   if flow != nothing
-    s = alg.set_flow(s, netw, flow)
+    S = alg.set_flow(S, netw, flow)
   end
   if alg == lpf
-    s = @set s.mu_tol = TOL
+    S = @set S.mu_tol = TOL
   end
-  @debug "[init]" s
+  @debug "[init]" S
 
   optimal, niters = false, 0
   for t = 1:100
-    expected_niters = alg == lpf ? lpf.expected_iteration_count(s) : nothing
+    s = S.kkt
+    expected_niters = alg == lpf ? lpf.expected_iteration_count(S) : nothing
     @debug "[iter]" t s.x s.y s.s expected_niters
     mu = mean(s.x .* s.s)
-    rd, rp, rc = alg.kkt_residual(s)
+    rd, rp, rc = kkt.kkt_residual(s)
     @debug "[iter]" mu rd rp rc norm(rd, Inf) norm(rp, Inf)
 
     if mu < TOL && norm(rd, Inf) < TOL && norm(rp, Inf) < TOL
@@ -63,19 +65,22 @@ function do_netw(netw::McfpNet; start = nothing, flow = nothing)
       break
     end
 
-    s = alg.single_step(s)
+    S = alg.single_step(S)
     niters += 1
 
+    s = S.kkt
     del_mu = mu - mean(s.x .* s.s)
     @debug "[iter]" del_mu
   end
+
+  s = S.kkt
   @debug "[iter end]" s.x s.y s.s optimal niters
   if !optimal
     mu = mean(s.x .* s.s)
-    rd, rp, rc = alg.kkt_residual(s)
+    rd, rp, rc = kkt.kkt_residual(s)
     @debug "[iter]" mu rd rp rc
   end
-  return s
+  return S
 end
 
 function do_phase_1(netw::McfpNet, flow = nothing)

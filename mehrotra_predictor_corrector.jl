@@ -3,112 +3,20 @@ module MehrotraPredictorCorrector
 using FromFile
 
 @from "graph.jl" import Graphs.McfpNet
+@from "nocedal_kkt.jl" import NocedalKKT as kkt
 using LinearAlgebra
 using Statistics
 import Base.@kwdef
 using Setfield
 
 @kwdef struct Solver
-  # fixed parameters for the problem
-  A::AbstractMatrix{<:Number}
-  b::AbstractVector{<:Number}
-  c::AbstractVector{<:Number}
-
-  # iterates
-  x::AbstractVector{<:Number}
-  y::AbstractVector{<:Number}  # \lambda
-  s::AbstractVector{<:Number}
+  kkt::kkt.Solver
 end
 
-function kkt_residual(s::Solver)
-  rd = s.A' * s.y + s.s - s.c  # dual
-  rp = s.A * s.x - s.b  # primal
-  rc = s.x .* s.s  # center
-  return rd, rp, rc
-end
-
-function big_kkt_solve(
-  s::Solver,
-  rd::AbstractVector{<:Number},
-  rp::AbstractVector{<:Number},
-  rc::AbstractVector{<:Number},
-)
-  n, m = length(rd), length(rp)  # var, con
-  S, X = diagm(s.s), diagm(s.x)
-  Z = zeros(m, n)
-  KKT = [
-    0I s.A' I
-    s.A 0I Z
-    S Z' X
-  ]
-  r = -[rd; rp; rc]
-  dxys = pinv(KKT) * r
-  dx, dy, ds = dxys[1:n], dxys[n+1:n+m], dxys[n+m+1:n+m+n]
-
-  KKT = [
-    0I s.A' I
-    s.A 0I Z
-    S Z' X
-  ]
-  @debug "[kkt error]" (KKT * [dx; dy; ds] + [rd; rp; rc])
-  return dx, dy, ds
-end
-
-function small_kkt_solve(
-  s::Solver,
-  rd::AbstractVector{<:Number},
-  rp::AbstractVector{<:Number},
-  rc::AbstractVector{<:Number},
-)
-  n, m = length(rd), length(rp)  # var, con
-  D = diagm(s.s ./ s.x)
-  KKT = [
-    -D s.A'
-    s.A 0I
-  ]
-  rdc = rd - rc ./ s.x
-  r = -[rdc; rp]
-  dxy = pinv(KKT) * r
-  dx, dy = dxy[1:n], dxy[n+1:n+m]
-  ds = -(rc + s.s .* dx) ./ s.x
-
-  S, X = diagm(s.s), diagm(s.x)
-  Z = zeros(m, n)
-  KKT = [
-    0I s.A' I
-    s.A 0I Z
-    S Z' X
-  ]
-  @debug "[kkt error]" (KKT * [dx; dy; ds] + [rd; rp; rc])
-  return dx, dy, ds
-end
-
-function no_kkt_solve(
-  s::Solver,
-  rd::AbstractVector{<:Number},
-  rp::AbstractVector{<:Number},
-  rc::AbstractVector{<:Number},
-)
-  L = s.A * diagm(s.x ./ s.s) * s.A'
-  dy = pinv(L) * (-rp - s.A * (rd .* s.x ./ s.s) + s.A * (rc ./ s.s))
-  dx = -(rc - s.x .* (rd + s.A' * dy)) ./ s.s
-  ds = -(rc + s.s .* dx) ./ s.x
-
-  n, m = length(rd), length(rp)  # var, con
-  S, X = diagm(s.s), diagm(s.x)
-  Z = zeros(m, n)
-  KKT = [
-    0I s.A' I
-    s.A 0I Z
-    S Z' X
-  ]
-  @debug "[kkt error]" (KKT * [dx; dy; ds] + [rd; rp; rc])
-  return dx, dy, ds
-end
-
-function single_step(s::Solver)
-  rd, rp, rc = kkt_residual(s)
-  dxf, dyf, dsf = no_kkt_solve(s, rd, rp, rc)
+function single_step(S::Solver)
+  s = S.kkt
+  rd, rp, rc = kkt.kkt_residual(s)
+  dxf, dyf, dsf = kkt.approx_kkt_solve(s, rd, rp, rc)
 
   n = length(s.x)
   ap = minimum([-s.x[i] / dxf[i] for i = 1:n if dxf[i] < 0]; init = 1)
@@ -118,7 +26,7 @@ function single_step(s::Solver)
   sigma = (muf / mu)^3
   rc += (dxf .* dsf) .- (sigma * mu)
 
-  dx, dy, ds = no_kkt_solve(s, rd, rp, rc)
+  dx, dy, ds = kkt.approx_kkt_solve(s, rd, rp, rc)
   ap = minimum([-s.x[i] / dx[i] for i = 1:n if dx[i] < 0]; init = 1)
   ad = minimum([-s.s[i] / ds[i] for i = 1:n if ds[i] < 0]; init = 1)
   ap, ad = 0.9 * ap, 0.9 * ad
@@ -127,7 +35,8 @@ function single_step(s::Solver)
   s = @set s.x += ap * dx
   s = @set s.y += ad * dy
   s = @set s.s += ad * ds
-  return s
+  S = @set S.kkt = s
+  return S
 end
 
 function from_netw(netw::McfpNet, start::Union{Solver,Nothing} = nothing)
@@ -139,14 +48,16 @@ function from_netw(netw::McfpNet, start::Union{Solver,Nothing} = nothing)
   n, m = netw.G.m * 2, netw.G.n + netw.G.m  # var, con
   x, y, s =
     start == nothing ? (0.1 * ones(n), zeros(m), 0.1 * ones(n)) :
-    (start.x, start.y, start.s)
+    (start.kkt.x, start.kkt.y, start.kkt.s)
 
-  S = Solver(A = [A 0A; I I], b = [b; u], c = [c; 0c], x = x, y = y, s = s)
+  S =
+    Solver(kkt = kkt.Solver(A = [A 0A; I I], b = [b; u], c = [c; 0c], x = x, y = y, s = s))
 
   return S
 end
 
-function set_flow(s::Solver, netw::McfpNet, x::AbstractVector)
+function set_flow(S::Solver, netw::McfpNet, x::AbstractVector)
+  s = S.kkt
   @assert length(x) == netw.G.m
   @assert length(s.x) == 2 * netw.G.m
   xu = netw.Cap - x
@@ -159,7 +70,8 @@ function set_flow(s::Solver, netw::McfpNet, x::AbstractVector)
     end
   end
   s = @set s.x = [x; xu]
-  return s
+  S = @set S.kkt = s
+  return S
 end
 
 end  # module MehrotraPredictorCorrector
