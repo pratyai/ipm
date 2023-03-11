@@ -136,6 +136,26 @@ function PlotMu(events, phase)
   return p
 end
 
+function PlotNiters(stat)
+  sort!(stat; by = x -> x[1] + x[2])
+
+  n_m = [n + m for (n, m, p1ic, p2ic) in stat]
+  p1ic = [p1ic for (n, m, p1ic, p2ic) in stat]
+  p2ic = [p2ic for (n, m, p1ic, p2ic) in stat]
+
+  viz = function (var, name)
+    p = plot!(n_m, var, label = name, primary = true)
+    p = scatter!(n_m, var, primary = false)
+    return p
+  end
+
+  p = viz(p1ic, "phase 1 #iters")
+  p = viz(p2ic, "phase 2 #iters")
+  p = viz(p1ic + p2ic, "net #iters")
+
+  return p
+end
+
 end  # module LogViz
 
 using Plots
@@ -145,15 +165,78 @@ function parse_cmdargs()
   s = ArgParseSettings()
   @add_arg_table s begin
     "-i"
-    help = "input log file path"
+    help = "input log file path (or directory, depending on the context)"
     arg_type = String
     required = true
     "-o"
     help = "image file directory"
     arg_type = String
     required = false
+    "-g"
+    help = "compute aggregate plots"
+    action = :store_true
   end
   return parse_args(s)
+end
+
+function do_single_log(f::String)
+  events = LogViz.ReadLogEvents(f)
+  events = LogViz.NeatlyGroup(events)
+
+  p = plot(dpi = 300, size = (800, 640), legend = :outerbottom, legend_columns = 3)
+  p = LogViz.PlotMu(events, "phase 1")
+  p = LogViz.PlotMu(events, "phase 2")
+  xlabel!("t")
+end
+
+function do_aggregate_log(d::String)
+  logs = readdir(d, join = true)
+  @show logs
+
+  stat_lg = function (lg)
+    events = LogViz.ReadLogEvents(lg)
+
+    n, m = nothing, nothing
+    for e in events
+      if e.tag != "mcfp"
+        continue
+      end
+      for (k, v) in e.payload
+        if k == "netw.G.n"
+          n = parse(Int, v)
+        elseif k == "netw.G.m"
+          m = parse(Int, v)
+        end
+      end
+    end
+
+    events = LogViz.NeatlyGroup(events)
+
+    niters = function (evs)
+      for (t, es) in evs
+        for e in es
+          if e.tag != "iter end"
+            continue
+          end
+          for (k, v) in e.payload
+            if k == "niters"
+              return parse(Int, v)
+            end
+          end
+        end
+      end
+      return nothing
+    end
+    p1_niters, p2_niters = niters(events["phase 1"]), niters(events["phase 2"])
+
+    return n, m, p1_niters, p2_niters
+  end
+
+  stat = [stat_lg(lg) for lg in logs]
+
+  p = plot(dpi = 300, size = (800, 640), legend = :outerbottom)
+  p = LogViz.PlotNiters(stat)
+  xlabel!("n + m")
 end
 
 function main()
@@ -165,13 +248,11 @@ function main()
     end
   end
 
-  events = LogViz.ReadLogEvents(args["i"])
-  events = LogViz.NeatlyGroup(events)
-
-  p = plot(dpi = 300, size = (800, 640), legend = :outerbottom, legend_columns = 3)
-  p = LogViz.PlotMu(events, "phase 1")
-  p = LogViz.PlotMu(events, "phase 2")
-  xlabel!("t")
+  if args["g"]
+    do_aggregate_log(args["i"])
+  else
+    do_single_log(args["i"])
+  end
 
   if args["o"] != nothing
     Plots.svg(args["o"] * "/" * basename(args["i"]))

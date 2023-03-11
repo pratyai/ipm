@@ -9,6 +9,8 @@
 └ @ Main /Users/pmz/gitspace/ipm/main.jl:115
 ┌ Info: [mcfp]
 │   netw.G = Main.var"/Users/pmz/gitspace/ipm/graph.jl".Graphs.Graph(3, 3, [1 2; 1 3; 3 2], [-1 -1 0; 1 0 1; 0 1 -1], [0 1 1; 0 0 0; 0 1 0])
+│   netw.G.n = 3
+│   netw.G.m = 3
 │   netw.Cost = [1, 1, 1]
 │   netw.Cap = [1, 1, 1]
 │   netw.Demand = [-1, 1, 0]

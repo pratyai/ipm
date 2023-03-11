@@ -115,7 +115,8 @@ function main()
   @info "[mcfp]" onetw.G onetw.Cost onetw.Cap onetw.Demand
 
   netw, x = add_a_star_spanning_tree(netw, sum(netw.Cost))
-  @info "[mcfp]" netw.G netw.Cost netw.Cap netw.Demand
+  @info "[mcfp]" netw.G netw.G.n netw.G.m
+  @info "[mcfp]" netw.Cost netw.Cap netw.Demand
 
   p1s = do_phase_1(netw, x)
   p2s = do_phase_2(netw, p1s)
