@@ -14,6 +14,7 @@ using Statistics
 @from "nocedal_kkt.jl" import NocedalKKT as kkt
 
 include("augmentations.jl")
+include("integral_flow.jl")
 
 function parse_cmdargs()
   s = ArgParseSettings()
@@ -38,7 +39,7 @@ function setup_logging(logpath::String)
 end
 
 function do_netw(netw::McfpNet; start = nothing, flow = nothing)
-  TOL = 1e-1
+  TOL = 1e-2
 
   alg = mpc
 
@@ -67,7 +68,7 @@ function do_netw(netw::McfpNet; start = nothing, flow = nothing)
       break
     end
 
-    S = alg.single_step(S)
+    S = alg.single_step(S; solver_fn = kkt.approx_kkt_solve)
     niters += 1
 
     s = S.kkt
@@ -110,11 +111,23 @@ function main()
 
   @info "[cmdline args]" args
   netw = ReadDimacs(args["i"])
+  onetw = netw
+  @info "[mcfp]" onetw.G onetw.Cost onetw.Cap onetw.Demand
+
   netw, x = add_a_star_spanning_tree(netw, sum(netw.Cost))
   @info "[mcfp]" netw.G netw.Cost netw.Cap netw.Demand
 
   p1s = do_phase_1(netw, x)
   p2s = do_phase_2(netw, p1s)
+
+  x = p2s.kkt.x[1:netw.G.m]
+  @info "[flow]" x
+
+  x = compute_integral_flow(netw, x)
+  @info "[integral flow]" x
+
+  ox = x[1:onetw.G.m]
+  @info "[integral flow]" ox
 
 
   if logio != nothing

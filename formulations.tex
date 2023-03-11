@@ -143,11 +143,11 @@ Let $M := AS^{-1}XA^T$ (note: this is \emph{not necessarily} a Laplacian). Then,
 \delta_x &= -S^{-1}(r_c - X(r_d + A^Td-y))\\
 \delta_s &= -X^{-1}(r_c + Sd_x)
 \end{align*}
-Observe that solving the $Md_y = -r_p - AS^{-1}Xr_d + AS^{-1}r_c$ system is difficult, even with a fast Laplacian solver. The remaining inversions of diagonal matrices and multiplications with sparse or diagonal matrices can be done relatively easily (i.e. $\Oo(nnz)$).
+Observe that solving the $Md_y = -r_p - AS^{-1}Xr_d + AS^{-1}r_c$ system is difficult --- even a fast Laplacian solver cannot directly help. The other inversions of diagonal matrices and multiplications with sparse or diagonal matrices can be done relatively easily (i.e. $\Oo(nnz)$).
 
 \subsubsection{Approximate KKT}
 
-Substituting in the \texttt{No KKT} system $Md_y = -r_p - AS^{-1}Xr_d + AS^{-1}r_c = -r_p -  AS^{-1}(Xr_d - r_c)$:
+Substituting in the $Md_y = -r_p - AS^{-1}Xr_d + AS^{-1}r_c = -r_p -  AS^{-1}(Xr_d - r_c)$ system:
 \begin{align*}
 \begin{bmatrix}\mathbf{A} & 0 \\ I & I\end{bmatrix}
 \begin{bmatrix}\mathbf{S}^{-1} & 0 \\ 0 & \mathbf{S}_u^{-1}\end{bmatrix}

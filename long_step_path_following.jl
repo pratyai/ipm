@@ -52,7 +52,7 @@ function find_good_neighbourhood(
   return lo
 end
 
-function single_step(S::Solver)
+function single_step(S::Solver; solver_fn = kkt.approx_kkt_solve)
   s = S.kkt
   # select some sigma in (0,1)
   gamma, sigma = S.gamma, S.sigma_max
@@ -61,7 +61,7 @@ function single_step(S::Solver)
   rd, rp, rc = kkt.kkt_residual(s)
   rc .-= sigma * mu
 
-  dx, dy, ds = kkt.big_kkt_solve(s, rd, rp, rc)
+  dx, dy, ds = solver_fn(s, rd, rp, rc)
   a = find_good_neighbourhood(S, dx, dy, ds)
   @debug "[iter]" a dx dy ds
   s = @set s.x += a * dx

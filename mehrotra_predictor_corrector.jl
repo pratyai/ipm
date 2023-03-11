@@ -13,10 +13,10 @@ using Setfield
   kkt::kkt.Solver
 end
 
-function single_step(S::Solver)
+function single_step(S::Solver; solver_fn = kkt.approx_kkt_solve)
   s = S.kkt
   rd, rp, rc = kkt.kkt_residual(s)
-  dxf, dyf, dsf = kkt.approx_kkt_solve(s, rd, rp, rc)
+  dxf, dyf, dsf = solver_fn(s, rd, rp, rc)
 
   n = length(s.x)
   ap = minimum([-s.x[i] / dxf[i] for i = 1:n if dxf[i] < 0]; init = 1)
@@ -26,7 +26,7 @@ function single_step(S::Solver)
   sigma = (muf / mu)^3
   rc += (dxf .* dsf) .- (sigma * mu)
 
-  dx, dy, ds = kkt.approx_kkt_solve(s, rd, rp, rc)
+  dx, dy, ds = solver_fn(s, rd, rp, rc)
   ap = minimum([-s.x[i] / dx[i] for i = 1:n if dx[i] < 0]; init = 1)
   ad = minimum([-s.s[i] / ds[i] for i = 1:n if ds[i] < 0]; init = 1)
   ap, ad = 0.9 * ap, 0.9 * ad

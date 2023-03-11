@@ -16,7 +16,7 @@ const EVENT_PAYLOAD_RE = r"^│[ ]*(?<key>.*) = (?<val>.*)$"m
   payload::Any
 end
 
-function from_str(e::AbstractString)::Union{Event, Nothing}
+function from_str(e::AbstractString)::Union{Event,Nothing}
   level, tag = match(EVENT_CLASS_RE, e)
   if level != "Info"
     return nothing
