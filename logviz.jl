@@ -100,7 +100,7 @@ function PlotMu(events, phase)
       label = name * " (" * phase * ")",
       primary = true,
       legend = :outerbottom,
-      legend_columns=3
+      legend_columns = 3,
     )
     p = scatter!(t[ind], var[ind], yscale = :log10, primary = false)
     return p
