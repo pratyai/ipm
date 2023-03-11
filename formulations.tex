@@ -40,6 +40,7 @@
 \newcommand{\Rgez}{\R_{\geq0}}
 \newcommand{\Rlz}{\R_{<0}}
 \newcommand{\Rlez}{\R_{\leq0}}
+\newcommand{\Oo}{\mathcal{O}}
 
 \begin{document}
 
@@ -115,7 +116,7 @@ $$A = \begin{bmatrix}\mathbf{A} & \bm{0} \\ \mathbf{I} & \mathbf{I}\end{bmatrix}
 \addConstraint{\lambda, s}{\in \R^m, \Rgez^n}
 \end{maxi}
 
-$$A = \begin{bmatrix}\mathbf{A} & \bm{0} \\ \mathbf{I} & \mathbf{I}\end{bmatrix} ~~~|~~~ \lambda = \begin{bmatrix}\mathbf{y} \\ \mathbf{y}_u\end{bmatrix} ~~~|~~~ b = \begin{bmatrix}\mathbf{b} \\ \mathbf{u}\end{bmatrix} ~~~|~~~ c = \begin{bmatrix}\mathbf{c} \\ \bm{0}\end{bmatrix} ~~~|~~~ s = \begin{bmatrix}\mathbf{z}_1 \\ \mathbf{z}_2\end{bmatrix}$$
+$$A = \begin{bmatrix}\mathbf{A} & \bm{0} \\ \mathbf{I} & \mathbf{I}\end{bmatrix} ~~~|~~~ \lambda = \begin{bmatrix}\mathbf{y} \\ \mathbf{y}_u\end{bmatrix} ~~~|~~~ b = \begin{bmatrix}\mathbf{b} \\ \mathbf{u}\end{bmatrix} ~~~|~~~ c = \begin{bmatrix}\mathbf{c} \\ \bm{0}\end{bmatrix} ~~~|~~~ s = \begin{bmatrix}\mathbf{z}_1 \\ \mathbf{z}_2\end{bmatrix} = \begin{bmatrix}\mathbf{s} \\ \mathbf{s}_u\end{bmatrix}$$
 
 \subsubsection{Big KKT}
 
@@ -124,209 +125,116 @@ $$\begin{bmatrix}
 A & 0 & 0 \\
 S & 0 & X
 \end{bmatrix}
-\begin{bmatrix}d_x \\ d_y \\ d_s\end{bmatrix} = 
+\begin{bmatrix}\delta_x \\ \delta_y \\ \delta_s\end{bmatrix} = 
 \begin{bmatrix}-r_d \\ -r_p \\ -r_c\end{bmatrix}$$
 
 \subsubsection{Small KKT}
 
 $$\begin{bmatrix}-X^{-1}S & A^T \\ A & 0\end{bmatrix}
-\begin{bmatrix}d_x \\ d_y\end{bmatrix} = 
+\begin{bmatrix}\delta_x \\ \delta_y\end{bmatrix} = 
 \begin{bmatrix}-r_d + X^{-1}r_c \\ -r_p\end{bmatrix}$$
-$$d_s = -X^{-1}(r_c + Sd_x)$$
+$$\delta_s = -X^{-1}(r_c + Sd_x)$$
 
 \subsubsection{No KKT}
 
 Let $M := AS^{-1}XA^T$ (note: this is \emph{not necessarily} a Laplacian). Then,
 \begin{align*}
-d_y &= M^+(-r_p - AS^{-1}Xr_d + AS^{-1}r_c) \\
-d_x &= -S^{-1}(r_c - X(r_d + A^Td-y))\\
-d_s &= -X^{-1}(r_c + Sd_x)
+\delta_y &= M^+(-r_p - AS^{-1}Xr_d + AS^{-1}r_c) \\
+\delta_x &= -S^{-1}(r_c - X(r_d + A^Td-y))\\
+\delta_s &= -X^{-1}(r_c + Sd_x)
 \end{align*}
+Observe that solving the $Md_y = -r_p - AS^{-1}Xr_d + AS^{-1}r_c$ system is difficult, even with a fast Laplacian solver. The remaining inversions of diagonal matrices and multiplications with sparse or diagonal matrices can be done relatively easily (i.e. $\Oo(nnz)$).
 
 \subsubsection{Approximate KKT}
 
-Substituting in the \texttt{Small KKT} system,
+Substituting in the \texttt{No KKT} system $Md_y = -r_p - AS^{-1}Xr_d + AS^{-1}r_c = -r_p -  AS^{-1}(Xr_d - r_c)$:
 \begin{align*}
+\begin{bmatrix}\mathbf{A} & 0 \\ I & I\end{bmatrix}
+\begin{bmatrix}\mathbf{S}^{-1} & 0 \\ 0 & \mathbf{S}_u^{-1}\end{bmatrix}
+\begin{bmatrix}\mathbf{X} & 0 \\ 0 & \mathbf{X}_u\end{bmatrix}
+\begin{bmatrix}\mathbf{A}^T & I \\ 0 & I\end{bmatrix}
+\begin{bmatrix}d_y \\ d_{yu}\end{bmatrix} &=
+-\begin{bmatrix}r_p \\ r_{pu}\end{bmatrix}
+- \begin{bmatrix}\mathbf{A} & 0 \\ I & I\end{bmatrix}
+\begin{bmatrix}\mathbf{S}^{-1} & 0 \\ 0 & \mathbf{S}_u^{-1}\end{bmatrix}
+\Big(
+	\begin{bmatrix}\mathbf{X} & 0 \\ 0 & \mathbf{X}_u\end{bmatrix}
+	\begin{bmatrix}r_d \\ r_{du}\end{bmatrix}
+	+ \begin{bmatrix}r_c \\ r_{cu}\end{bmatrix}
+\Big) \\
+\intertext{Simplifying:}
 \begin{bmatrix}
--\mathbf{X}^{-1}\mathbf{S} & 0 & \mathbf{A}^T & I\\
-0 & -\mathbf{X}_u^{-1}\mathbf{S}_u & 0 & I\\
-\mathbf{A} & 0 & 0 & 0 \\
-I & I & 0 & 0
+	\mathbf{A}\mathbf{S}^{-1}\mathbf{X}\mathbf{A}^T & \mathbf{A}\mathbf{S}^{-1}\mathbf{X} \\
+	\mathbf{S}^{-1}\mathbf{X}\mathbf{A}^T & \mathbf{S}^{-1}\mathbf{X}+\mathbf{S}_u^{-1}\mathbf{X}_u
 \end{bmatrix}
-\begin{bmatrix}d_x \\ d_{xu} \\ d_y \\ d_{yu}\end{bmatrix} &= 
+\begin{bmatrix}d_y \\ d_{yu}\end{bmatrix} &=
 \begin{bmatrix}
--r_d + \mathbf{X}^{-1}r_c \\
--r_{du} + \mathbf{X}_u^{-1}r_{cu} \\
--r_p \\
--r_{pu}
-\end{bmatrix} \\
-\intertext{Scaling:}
-\begin{bmatrix}
-I & 0 & -\mathbf{S}^{-1}\mathbf{X}\mathbf{A}^T & -\mathbf{S}^{-1}\mathbf{X} \\
-0 & I & 0 & -\mathbf{S}_u^{-1}\mathbf{X}_u \\
-\mathbf{A} & 0 & 0 & 0 \\
-I & I & 0 & 0
-\end{bmatrix}
-\begin{bmatrix}d_x \\ d_{xu} \\ d_y \\ d_{yu}\end{bmatrix} &= 
-\begin{bmatrix}
-\mathbf{S}^{-1}(\mathbf{X}r_d - r_c) \\
-\mathbf{S}_u^{-1}(\mathbf{X}_ur_{du} - r_{cu}) \\
--r_p \\
--r_{pu}
-\end{bmatrix} \\
-\intertext{Eliminate $d_x$:}
-\begin{bmatrix}
-I & 0 & -\mathbf{S}^{-1}\mathbf{X}\mathbf{A}^T & -\mathbf{S}^{-1}\mathbf{X} \\
-0 & I & 0 & -\mathbf{S}_u^{-1}\mathbf{X}_u \\
-0 & 0 & \mathbf{A}\mathbf{S}^{-1}\mathbf{X}\mathbf{A}^T & \mathbf{A}\mathbf{S}^{-1}\mathbf{X} \\
-0 & I & \mathbf{S}^{-1}\mathbf{X}\mathbf{A}^T & \mathbf{S}^{-1}\mathbf{X}
-\end{bmatrix}
-\begin{bmatrix}d_x \\ d_{xu} \\ d_y \\ d_{yu}\end{bmatrix} &= 
-\begin{bmatrix}
-\mathbf{S}^{-1}(\mathbf{X}r_d - r_c) \\
-\mathbf{S}_u^{-1}(\mathbf{X}_ur_{du} - r_{cu}) \\
--r_p - \mathbf{A}\mathbf{S}^{-1}(\mathbf{X}r_d - r_c) \\
--r_{pu} - \mathbf{S}^{-1}(\mathbf{X}r_d - r_c)
-\end{bmatrix} \\
-\intertext{Eliminate $d_{xu}$:}
-\begin{bmatrix}
-I & 0 & -\mathbf{S}^{-1}\mathbf{X}\mathbf{A}^T & -\mathbf{S}^{-1}\mathbf{X} \\
-0 & I & 0 & -\mathbf{S}_u^{-1}\mathbf{X}_u \\
-0 & 0 & \mathbf{A}\mathbf{S}^{-1}\mathbf{X}\mathbf{A}^T & \mathbf{A}\mathbf{S}^{-1}\mathbf{X} \\
-0 & 0 & \mathbf{S}^{-1}\mathbf{X}\mathbf{A}^T & \mathbf{S}^{-1}\mathbf{X}+\mathbf{S}_u^{-1}\mathbf{X}_u
-\end{bmatrix}
-\begin{bmatrix}d_x \\ d_{xu} \\ d_y \\ d_{yu}\end{bmatrix} &= 
-\begin{bmatrix}
-\mathbf{S}^{-1}(\mathbf{X}r_d - r_c) \\
-\mathbf{S}_u^{-1}(\mathbf{X}_ur_{du} - r_{cu}) \\
--r_p - \mathbf{A}\mathbf{S}^{-1}(\mathbf{X}r_d - r_c) \\
--r_{pu} - \mathbf{S}^{-1}(\mathbf{X}r_d - r_c) - \mathbf{S}_u^{-1}(\mathbf{X}_ur_{du} - r_{cu})
+	-r_p - \mathbf{A}\mathbf{S}^{-1}(\mathbf{X}r_d - r_c) \\
+	-r_{pu} - \mathbf{S}^{-1}(\mathbf{X}r_d - r_c) - \mathbf{S}_u^{-1}(\mathbf{X}_ur_{du} - r_{cu})
 \end{bmatrix} \\
 \intertext{Let $\mathbf{K} := \mathbf{S}^{-1}\mathbf{X}+\mathbf{S}_u^{-1}\mathbf{X}_u$ and $r_q := -r_{pu} - \mathbf{S}^{-1}(\mathbf{X}r_d - r_c) - \mathbf{S}_u^{-1}(\mathbf{X}_ur_{du} - r_{cu})$:}
 \begin{bmatrix}
-I & 0 & -\mathbf{S}^{-1}\mathbf{X}\mathbf{A}^T & -\mathbf{S}^{-1}\mathbf{X} \\
-0 & I & 0 & -\mathbf{S}_u^{-1}\mathbf{X}_u \\
-0 & 0 & \mathbf{A}\mathbf{S}^{-1}\mathbf{X}\mathbf{A}^T & \mathbf{A}\mathbf{S}^{-1}\mathbf{X} \\
-0 & 0 & \mathbf{S}^{-1}\mathbf{X}\mathbf{A}^T & \mathbf{K}
+	\mathbf{A}\mathbf{S}^{-1}\mathbf{X}\mathbf{A}^T & \mathbf{A}\mathbf{S}^{-1}\mathbf{X} \\
+	\mathbf{S}^{-1}\mathbf{X}\mathbf{A}^T & \mathbf{K}
 \end{bmatrix}
-\begin{bmatrix}d_x \\ d_{xu} \\ d_y \\ d_{yu}\end{bmatrix} &= 
+\begin{bmatrix}d_y \\ d_{yu}\end{bmatrix} &=
 \begin{bmatrix}
-\mathbf{S}^{-1}(\mathbf{X}r_d - r_c) \\
-\mathbf{S}_u^{-1}(\mathbf{X}_ur_{du} - r_{cu}) \\
--r_p - \mathbf{A}\mathbf{S}^{-1}(\mathbf{X}r_d - r_c) \\
-r_q
-\end{bmatrix} \\
-\intertext{Swapping $d_y$ and $d_{yu}$:}
-\begin{bmatrix}
-I & 0 & -\mathbf{S}^{-1}\mathbf{X} & -\mathbf{S}^{-1}\mathbf{X}\mathbf{A}^T \\
-0 & I & -\mathbf{S}_u^{-1}\mathbf{X}_u & 0 \\
-0 & 0 & \mathbf{K} & \mathbf{S}^{-1}\mathbf{X}\mathbf{A}^T \\
-0 & 0 & \mathbf{A}\mathbf{S}^{-1}\mathbf{X} & \mathbf{A}\mathbf{S}^{-1}\mathbf{X}\mathbf{A}^T
-\end{bmatrix}
-\begin{bmatrix}d_x \\ d_{xu} \\ d_{yu} \\ d_y\end{bmatrix} &= 
-\begin{bmatrix}
-\mathbf{S}^{-1}(\mathbf{X}r_d - r_c) \\
-\mathbf{S}_u^{-1}(\mathbf{X}_ur_{du} - r_{cu}) \\
-r_q \\
--r_p - \mathbf{A}\mathbf{S}^{-1}(\mathbf{X}r_d - r_c)
+	-r_p - \mathbf{A}\mathbf{S}^{-1}(\mathbf{X}r_d - r_c) \\
+	r_q
 \end{bmatrix} \\
 \intertext{Pretending that $\mathbf{K}$ is invertible, and scaling:}
 \begin{bmatrix}
-I & 0 & -\mathbf{S}^{-1}\mathbf{X} & -\mathbf{S}^{-1}\mathbf{X}\mathbf{A}^T \\
-0 & I & -\mathbf{S}_u^{-1}\mathbf{X}_u & 0 \\
-0 & 0 & I & \mathbf{K}^{-1}\mathbf{S}^{-1}\mathbf{X}\mathbf{A}^T \\
-0 & 0 & \mathbf{A}\mathbf{S}^{-1}\mathbf{X} & \mathbf{A}\mathbf{S}^{-1}\mathbf{X}\mathbf{A}^T
+	\mathbf{A}\mathbf{S}^{-1}\mathbf{X}\mathbf{A}^T & \mathbf{A}\mathbf{S}^{-1}\mathbf{X} \\
+	\mathbf{K}^{-1}\mathbf{S}^{-1}\mathbf{X}\mathbf{A}^T & I
 \end{bmatrix}
-\begin{bmatrix}d_x \\ d_{xu} \\ d_{yu} \\ d_y\end{bmatrix} &= 
+\begin{bmatrix}d_y \\ d_{yu}\end{bmatrix} &=
 \begin{bmatrix}
-\mathbf{S}^{-1}(\mathbf{X}r_d - r_c) \\
-\mathbf{S}_u^{-1}(\mathbf{X}_ur_{du} - r_{cu}) \\
-\mathbf{K}^{-1}r_q \\
--r_p - \mathbf{A}\mathbf{S}^{-1}(\mathbf{X}r_d - r_c)
+	-r_p - \mathbf{A}\mathbf{S}^{-1}(\mathbf{X}r_d - r_c) \\
+	\mathbf{K}^{-1}r_q
 \end{bmatrix} \\
 \intertext{Eliminating $d_{yu}$:}
 \begin{bmatrix}
-I & 0 & -\mathbf{S}^{-1}\mathbf{X} & -\mathbf{S}^{-1}\mathbf{X}\mathbf{A}^T \\
-0 & I & -\mathbf{S}_u^{-1}\mathbf{X}_u & 0 \\
-0 & 0 & I & \mathbf{K}^{-1}\mathbf{S}^{-1}\mathbf{X}\mathbf{A}^T \\
-0 & 0 & 0 & \mathbf{A}(\mathbf{S}^{-1}\mathbf{X} - \mathbf{S}^{-1}\mathbf{X}\mathbf{K}^{-1}\mathbf{S}^{-1}\mathbf{X})\mathbf{A}^T
+	\mathbf{A}(\mathbf{S}^{-1}\mathbf{X} - \mathbf{S}^{-1}\mathbf{X}\mathbf{K}^{-1}\mathbf{S}^{-1}\mathbf{X})\mathbf{A}^T & 0 \\
+	\mathbf{K}^{-1}\mathbf{S}^{-1}\mathbf{X}\mathbf{A}^T & I
 \end{bmatrix}
-\begin{bmatrix}d_x \\ d_{xu} \\ d_{yu} \\ d_y\end{bmatrix} &= 
+\begin{bmatrix}d_y \\ d_{yu}\end{bmatrix} &=
 \begin{bmatrix}
-\mathbf{S}^{-1}(\mathbf{X}r_d - r_c) \\
-\mathbf{S}_u^{-1}(\mathbf{X}_ur_{du} - r_{cu}) \\
-\mathbf{K}^{-1}r_q \\
--r_p - \mathbf{A}\mathbf{S}^{-1}(\mathbf{X}r_d - r_c + \mathbf{X}\mathbf{K}^{-1}r_q)
+	-r_p - \mathbf{A}\mathbf{S}^{-1}(\mathbf{X}r_d - r_c + \mathbf{X}\mathbf{K}^{-1}r_q) \\
+	\mathbf{K}^{-1}r_q
 \end{bmatrix} \\
 \intertext{Let $\mathbf{D} := \mathbf{S}^{-1}\mathbf{X} - \mathbf{S}^{-1}\mathbf{X}\mathbf{K}^{-1}\mathbf{S}^{-1}\mathbf{X} = \mathbf{S}^{-1}\mathbf{X}(I - \mathbf{K}^{-1}\mathbf{S}^{-1}\mathbf{X})$ and $\mathbf{L} := \mathbf{A}\mathbf{D}\mathbf{A}^T$ and $r_s := -r_p - \mathbf{A}\mathbf{S}^{-1}(\mathbf{X}r_d - r_c + \mathbf{X}\mathbf{K}^{-1}r_q)$:}
 \begin{bmatrix}
-I & 0 & -\mathbf{S}^{-1}\mathbf{X} & -\mathbf{S}^{-1}\mathbf{X}\mathbf{A}^T \\
-0 & I & -\mathbf{S}_u^{-1}\mathbf{X}_u & 0 \\
-0 & 0 & I & \mathbf{K}^{-1}\mathbf{S}^{-1}\mathbf{X}\mathbf{A}^T \\
-0 & 0 & 0 & \mathbf{L}
+	\mathbf{L} & 0 \\
+	\mathbf{K}^{-1}\mathbf{S}^{-1}\mathbf{X}\mathbf{A}^T & I
 \end{bmatrix}
-\begin{bmatrix}d_x \\ d_{xu} \\ d_{yu} \\ d_y\end{bmatrix} &= 
+\begin{bmatrix}d_y \\ d_{yu}\end{bmatrix} &=
 \begin{bmatrix}
-\mathbf{S}^{-1}(\mathbf{X}r_d - r_c) \\
-\mathbf{S}_u^{-1}(\mathbf{X}_ur_{du} - r_{cu}) \\
-\mathbf{K}^{-1}r_q \\
-r_s
+	r_s \\
+	\mathbf{K}^{-1}r_q
 \end{bmatrix} \\
 \intertext{Pretending that $\mathbf{L}$ is invertible:}
 \begin{bmatrix}
-I & 0 & -\mathbf{S}^{-1}\mathbf{X} & -\mathbf{S}^{-1}\mathbf{X}\mathbf{A}^T \\
-0 & I & -\mathbf{S}_u^{-1}\mathbf{X}_u & 0 \\
-0 & 0 & I & \mathbf{K}^{-1}\mathbf{S}^{-1}\mathbf{X}\mathbf{A}^T \\
-0 & 0 & 0 & I
+	I & 0 \\
+	\mathbf{K}^{-1}\mathbf{S}^{-1}\mathbf{X}\mathbf{A}^T & I
 \end{bmatrix}
-\begin{bmatrix}d_x \\ d_{xu} \\ d_{yu} \\ d_y\end{bmatrix} &= 
+\begin{bmatrix}d_y \\ d_{yu}\end{bmatrix} &=
 \begin{bmatrix}
-\mathbf{S}^{-1}(\mathbf{X}r_d - r_c) \\
-\mathbf{S}_u^{-1}(\mathbf{X}_ur_{du} - r_{cu}) \\
-\mathbf{K}^{-1}r_q \\
-\mathbf{L}^{-1}r_s
+	\mathbf{L}^{-1}r_s \\
+	\mathbf{K}^{-1}r_q
 \end{bmatrix} \\
 \intertext{Eliminating $d_y$,}
-\begin{bmatrix}
-I & 0 & -\mathbf{S}^{-1}\mathbf{X} & 0 \\
-0 & I & -\mathbf{S}_u^{-1}\mathbf{X}_u & 0 \\
-0 & 0 & I & 0 \\
-0 & 0 & 0 & I
+\delta_y = \begin{bmatrix}
+	I & 0 \\
+	0 & I
 \end{bmatrix}
-\begin{bmatrix}d_x \\ d_{xu} \\ d_{yu} \\ d_y\end{bmatrix} &= 
+\begin{bmatrix}d_y \\ d_{yu}\end{bmatrix} &=
 \begin{bmatrix}
-\mathbf{S}^{-1}(\mathbf{X}r_d - r_c + \mathbf{X}\mathbf{A}^Td_y) \\
-\mathbf{S}_u^{-1}(\mathbf{X}_ur_{du} - r_{cu}) \\
-\mathbf{K}^{-1}(r_q - \mathbf{S}^{-1}\mathbf{X}\mathbf{A}^Td_y) \\
-\mathbf{L}^{-1}r_s
+	\mathbf{L}^{-1}r_s \\
+	\mathbf{K}^{-1}(r_q - \mathbf{S}^{-1}\mathbf{X}\mathbf{A}^Td_y)
 \end{bmatrix} \\
-\intertext{Eliminating $d_{yu}$,}
-\begin{bmatrix}
-I & 0 & 0 & 0 \\
-0 & I & 0 & 0 \\
-0 & 0 & I & 0 \\
-0 & 0 & 0 & I
-\end{bmatrix}
-\begin{bmatrix}d_x \\ d_{xu} \\ d_{yu} \\ d_y\end{bmatrix} &= 
-\begin{bmatrix}
-\mathbf{S}^{-1}(\mathbf{X}(r_d + \mathbf{A}^Td_y + d_{yu}) - r_c) \\
-\mathbf{S}_u^{-1}(\mathbf{X}_u(r_{du} + d_{yu}) - r_{cu}) \\
-\mathbf{K}^{-1}(r_q - \mathbf{S}^{-1}\mathbf{X}\mathbf{A}^Td_y) \\
-\mathbf{L}^{-1}r_s
-\end{bmatrix}
+\intertext{And we can apply the remaining formula from \texttt{No KKT}:}
+\delta_x &= -S^{-1}(r_c - X(r_d + A^Td-y))\\
+\delta_s &= -X^{-1}(r_c + Sd_x)
 \end{align*}
-
-In summary, we want the following steps:
-\begin{itemize}
-\item \texttt{k = x ./ s + xu ./ su}
-\item \texttt{rq = -rpu - (x .* rd - rc) ./ s - (xu .* rdu - rcu) ./ su}
-\item \texttt{d = x .* (1 .- x ./ (k .* s)) ./ s}
-\item \texttt{L = A * diag(d) * A'}
-\item \texttt{rs = -rp - A * ((x .* (rd + rq ./ k) - rc) ./ s)}
-\item \texttt{dy = inv(L) * rs}
-\item \texttt{dyu = (rq - (A' * dy) .* x ./ s) ./ k}
-\item \texttt{dxu = (xu .* (rdu + dyu) - rcu) ./ su}
-\item \texttt{dx = (x .* (rd + A' * dy + dyu) - rc) ./ su}
-\end{itemize}
 
 \end{document}
