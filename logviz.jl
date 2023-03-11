@@ -148,12 +148,22 @@ function parse_cmdargs()
     help = "input log file path"
     arg_type = String
     required = true
+    "-o"
+    help = "image file directory"
+    arg_type = String
+    required = false
   end
   return parse_args(s)
 end
 
 function main()
   args = parse_cmdargs()
+
+  if args["o"] != nothing
+    if args["o"] == "?"
+      args["o"] = "plots"
+    end
+  end
 
   events = LogViz.ReadLogEvents(args["i"])
   events = LogViz.NeatlyGroup(events)
@@ -162,8 +172,14 @@ function main()
   p = LogViz.PlotMu(events, "phase 1")
   p = LogViz.PlotMu(events, "phase 2")
   xlabel!("t")
-  display(p)
+
+  if args["o"] != nothing
+    Plots.svg(args["o"] * "/" * basename(args["i"]))
+    Plots.png(args["o"] * "/" * basename(args["i"]))
+  else
+    display(p)
+    readline()
+  end
 end
 
 main()
-readline()
