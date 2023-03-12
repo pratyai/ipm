@@ -8,7 +8,7 @@ c   Random seed:          97
 c   Number of nodes:      100
 c   Source nodes:         33
 c   Sink nodes:           9
-c   Number of arcs:       8813
+c   Number of arcs:       6006
 c   Minimum arc cost:     10
 c   Maximum arc cost:     99
 c   Total supply:         1000
