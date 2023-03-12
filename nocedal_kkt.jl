@@ -17,6 +17,9 @@ using SparseArrays
   x::AbstractVector{<:Number}
   y::AbstractVector{<:Number}  # \lambda
   s::AbstractVector{<:Number}
+
+  # cache & perf stuff
+  Ag::AbstractMatrix{<:Number}  # incidence matrix
 end
 
 function kkt_residual(s::Solver)
@@ -119,9 +122,8 @@ function approx_kkt_solve(
   tol::Number = 1e-6,
 )
   dy = let s = s, rd = rd, rp = rp, rc = rc
-    m = Int(length(s.x) / 2)
-    n = length(s.y) - m
-    A = s.A[1:n, 1:m]
+    A = s.Ag
+    n, m = size(A)
     x, xu = s.x[1:m], s.x[m+1:m+m]
     rd, rdu = rd[1:m], rd[m+1:m+m]
     y, yu = s.y[1:n], s.y[n+1:n+m]

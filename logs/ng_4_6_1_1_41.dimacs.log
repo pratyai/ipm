@@ -1,373 +1,380 @@
 ┌ Info: [cmdline args]
 │   args = Dict{String, Any}("l" => "logs/ng_4_6_1_1_41.dimacs.log", "i" => "data/ng_4_6_1_1_41.dimacs")
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:112
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:117
 ┌ Info: [mcfp]
 │   onetw.G = Main.var"/Users/pmz/gitspace/ipm/graph.jl".Graphs.Graph(4, 6, [1 2; 1 3; 2 3; 2 1; 3 4; 3 2], [-1 -1 0 1 0 0; 1 0 -1 -1 0 1; 0 1 1 0 -1 -1; 0 0 0 0 1 0], [0 1 1 0; 1 0 1 0; 0 1 0 1; 0 0 0 0])
 │   onetw.Cost = [18, 14, 89, 52, 42, 83]
 │   onetw.Cap = [696, 482, 696, 696, 696, 953]
 │   onetw.Demand = [-696, 0, 0, 696]
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:115
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:120
+┌ Info: [mcfp]
+│   onetw.Cost = [18, 14, 89, 52, 42, 83]
+│   onetw.Cap = [696, 482, 696, 696, 696, 953]
+│   onetw.Demand = [-696, 0, 0, 696]
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:121
 ┌ Info: [mcfp]
 │   netw.G = Main.var"/Users/pmz/gitspace/ipm/graph.jl".Graphs.Graph(5, 8, [1 2; 1 3; 2 3; 2 1; 3 4; 3 2; 1 5; 5 4], [-1 -1 0 1 0 0 -1 0; 1 0 -1 -1 0 1 0 0; 0 1 1 0 -1 -1 0 0; 0 0 0 0 1 0 0 1; 0 0 0 0 0 0 1 -1], [0 1 1 0 1; 1 0 1 0 0; 0 1 0 1 0; 0 0 0 0 0; 0 0 0 1 0])
 │   netw.G.n = 5
 │   netw.G.m = 8
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:124
+┌ Info: [mcfp]
 │   netw.Cost = [18, 14, 89, 52, 42, 83, 298, 298]
 │   netw.Cap = [696, 482, 696, 696, 696, 953, 696, 696]
 │   netw.Demand = [-696, 0, 0, 696, 0]
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:118
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:125
 ┌ Info: [phase 1]
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:91
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:96
 ┌ Info: [iter]
 │   t = 1
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:59
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:64
 ┌ Info: [iter]
 │   mu = 35.06875
 │   norm(rd, Inf) = 0.1
 │   norm(rp, Inf) = 0.0
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:63
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:68
 ┌ Info: [iter]
 │   del_mu = 31.561875
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:76
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:81
 ┌ Info: [iter]
 │   t = 2
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:59
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:64
 ┌ Info: [iter]
 │   mu = 3.506875000000002
 │   norm(rd, Inf) = 0.010000000000000009
 │   norm(rp, Inf) = 0.0
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:63
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:68
 ┌ Info: [iter]
 │   del_mu = 3.156187500000002
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:76
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:81
 ┌ Info: [iter]
 │   t = 3
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:59
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:64
 ┌ Info: [iter]
 │   mu = 0.3506875000000003
 │   norm(rd, Inf) = 0.0010000000000000009
 │   norm(rp, Inf) = 0.0
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:63
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:68
 ┌ Info: [iter]
 │   del_mu = 0.3156187500000003
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:76
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:81
 ┌ Info: [iter]
 │   t = 4
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:59
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:64
 ┌ Info: [iter]
 │   mu = 0.03506875000000001
 │   norm(rd, Inf) = 0.00010000000000000005
 │   norm(rp, Inf) = 0.0
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:63
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:68
 ┌ Info: [iter]
 │   del_mu = 0.03156187500000001
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:76
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:81
 ┌ Info: [iter]
 │   t = 5
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:59
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:64
 ┌ Info: [iter]
 │   mu = 0.0035068749999999996
 │   norm(rd, Inf) = 9.999999999999999e-6
 │   norm(rp, Inf) = 0.0
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:63
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:68
 ┌ Info: [iter end]
 │   optimal = true
 │   niters = 4
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:80
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:85
 ┌ Info: [phase 2]
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:97
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:102
 ┌ Info: [iter]
 │   t = 1
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:59
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:64
 ┌ Info: [iter]
 │   mu = 0.0035068749999999996
 │   norm(rd, Inf) = 297.99999
 │   norm(rp, Inf) = 0.0
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:63
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:68
 ┌ Info: [iter]
 │   del_mu = -4.309608328560352e-7
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:76
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:81
 ┌ Info: [iter]
 │   t = 2
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:59
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:64
 ┌ Info: [iter]
 │   mu = 0.0035073059608328556
 │   norm(rd, Inf) = 297.99998999999804
 │   norm(rp, Inf) = 6.94626578479074e-11
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:63
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:68
 ┌ Info: [iter]
 │   del_mu = -0.003030352657835764
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:76
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:81
 ┌ Info: [iter]
 │   t = 3
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:59
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:64
 ┌ Info: [iter]
 │   mu = 0.00653765861866862
 │   norm(rd, Inf) = 297.9999899999858
 │   norm(rp, Inf) = 6.934897101018578e-11
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:63
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:68
 ┌ Info: [iter]
 │   del_mu = -0.0009110762655364021
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:76
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:81
 ┌ Info: [iter]
 │   t = 4
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:59
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:64
 ┌ Info: [iter]
 │   mu = 0.007448734884205022
 │   norm(rd, Inf) = 297.9999899999721
 │   norm(rp, Inf) = 6.934897101018578e-11
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:63
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:68
 ┌ Info: [iter]
 │   del_mu = -0.004322477313649251
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:76
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:81
 ┌ Info: [iter]
 │   t = 5
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:59
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:64
 ┌ Info: [iter]
 │   mu = 0.011771212197854273
 │   norm(rd, Inf) = 297.99998999993926
 │   norm(rp, Inf) = 6.94626578479074e-11
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:63
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:68
 ┌ Info: [iter]
 │   del_mu = -0.034987104554770956
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:76
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:81
 ┌ Info: [iter]
 │   t = 6
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:59
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:64
 ┌ Info: [iter]
 │   mu = 0.04675831675262523
 │   norm(rd, Inf) = 297.99998999951697
 │   norm(rp, Inf) = 6.934897101018578e-11
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:63
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:68
 ┌ Info: [iter]
 │   del_mu = -0.01963118142213726
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:76
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:81
 ┌ Info: [iter]
 │   t = 7
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:59
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:64
 ┌ Info: [iter]
 │   mu = 0.06638949817476249
 │   norm(rd, Inf) = 297.9999899982081
 │   norm(rp, Inf) = 7.935341272968799e-11
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:63
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:68
 ┌ Info: [iter]
 │   del_mu = -0.02581949356756434
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:76
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:81
 ┌ Info: [iter]
 │   t = 8
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:59
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:64
 ┌ Info: [iter]
 │   mu = 0.09220899174232683
 │   norm(rd, Inf) = 297.99998999623153
 │   norm(rp, Inf) = 7.344169716816396e-11
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:63
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:68
 ┌ Info: [iter]
 │   del_mu = -0.040188682829587985
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:76
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:81
 ┌ Info: [iter]
 │   t = 9
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:59
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:64
 ┌ Info: [iter]
 │   mu = 0.13239767457191481
 │   norm(rd, Inf) = 297.99998999217746
 │   norm(rp, Inf) = 8.878942026058212e-10
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:63
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:68
 ┌ Info: [iter]
 │   del_mu = -0.012153540322214856
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:76
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:81
 ┌ Info: [iter]
 │   t = 10
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:59
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:64
 ┌ Info: [iter]
 │   mu = 0.14455121489412967
 │   norm(rd, Inf) = 297.9999899902207
 │   norm(rp, Inf) = 8.448068911093287e-10
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:63
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:68
 ┌ Info: [iter]
 │   del_mu = -0.4971977562206392
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:76
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:81
 ┌ Info: [iter]
 │   t = 11
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:59
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:64
 ┌ Info: [iter]
 │   mu = 0.6417489711147689
 │   norm(rd, Inf) = 297.99998991767944
 │   norm(rp, Inf) = 4.705270839622244e-9
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:63
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:68
 ┌ Info: [iter]
 │   del_mu = -0.08856401653090007
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:76
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:81
 ┌ Info: [iter]
 │   t = 12
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:59
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:64
 ┌ Info: [iter]
 │   mu = 0.730312987645669
 │   norm(rd, Inf) = 297.9999898516715
 │   norm(rp, Inf) = 5.529841473617125e-9
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:63
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:68
 ┌ Info: [iter]
 │   del_mu = -0.09597776572137284
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:76
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:81
 ┌ Info: [iter]
 │   t = 13
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:59
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:64
 ┌ Info: [iter]
 │   mu = 0.8262907533670418
 │   norm(rd, Inf) = 297.99998977619174
 │   norm(rp, Inf) = 5.119704837852623e-8
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:63
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:68
 ┌ Info: [iter]
 │   del_mu = -3.04196998784885e8
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:76
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:81
 ┌ Info: [iter]
 │   t = 14
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:59
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:64
 ┌ Info: [iter]
 │   mu = 3.041969996111757e8
 │   norm(rd, Inf) = 29.79999897768721
 │   norm(rp, Inf) = 4.103412720724009e-8
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:63
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:68
 ┌ Info: [iter]
 │   del_mu = 2.737615798440061e8
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:76
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:81
 ┌ Info: [iter]
 │   t = 15
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:59
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:64
 ┌ Info: [iter]
 │   mu = 3.0435419767169572e7
 │   norm(rd, Inf) = 2.98153986124089
 │   norm(rp, Inf) = 5.501760824699886e-9
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:63
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:68
 ┌ Info: [iter]
 │   del_mu = 2.7376186420438346e7
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:76
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:81
 ┌ Info: [iter]
 │   t = 16
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:59
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:64
 ┌ Info: [iter]
 │   mu = 3.0592333467312274e6
 │   norm(rd, Inf) = 0.2996911644622742
 │   norm(rp, Inf) = 5.664389846060658e-9
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:63
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:68
 ┌ Info: [iter]
 │   del_mu = 2.737899382478277e6
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:76
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:81
 ┌ Info: [iter]
 │   t = 17
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:59
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:64
 ┌ Info: [iter]
 │   mu = 321333.96425295016
 │   norm(rd, Inf) = 0.031478838817292853
 │   norm(rp, Inf) = 8.443521437584423e-9
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:63
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:68
 ┌ Info: [iter]
 │   del_mu = 276273.35260550276
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:76
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:81
 ┌ Info: [iter]
 │   t = 18
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:59
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:64
 ┌ Info: [iter]
 │   mu = 45060.61164744742
 │   norm(rd, Inf) = 0.0044181613372415995
 │   norm(rp, Inf) = 9.570157999405637e-10
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:63
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:68
 ┌ Info: [iter]
 │   del_mu = 35882.88909126792
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:76
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:81
 ┌ Info: [iter]
 │   t = 19
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:59
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:64
 ┌ Info: [iter]
 │   mu = 9177.7225561795
 │   norm(rd, Inf) = 0.0009838317506023486
 │   norm(rp, Inf) = 1.9096546566288453e-10
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:63
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:68
 ┌ Info: [iter]
 │   del_mu = 8109.01217815057
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:76
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:81
 ┌ Info: [iter]
 │   t = 20
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:59
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:64
 ┌ Info: [iter]
 │   mu = 1068.7103780289299
 │   norm(rd, Inf) = 0.00010415709647304539
 │   norm(rp, Inf) = 2.802380549837835e-11
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:63
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:68
 ┌ Info: [iter]
 │   del_mu = 961.4604047700113
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:76
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:81
 ┌ Info: [iter]
 │   t = 21
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:59
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:64
 ┌ Info: [iter]
 │   mu = 107.24997325891857
 │   norm(rd, Inf) = 1.0487745385034941e-5
 │   norm(rp, Inf) = 2.5011104298755527e-12
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:63
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:68
 ┌ Info: [iter]
 │   del_mu = 96.52461287089896
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:76
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:81
 ┌ Info: [iter]
 │   t = 22
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:59
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:64
 ┌ Info: [iter]
 │   mu = 10.725360388019615
 │   norm(rd, Inf) = 1.048845547302335e-6
 │   norm(rp, Inf) = 1.4779288903810084e-12
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:63
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:68
 ┌ Info: [iter]
 │   del_mu = 9.652823986210807
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:76
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:81
 ┌ Info: [iter]
 │   t = 23
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:59
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:64
 ┌ Info: [iter]
 │   mu = 1.0725364018088082
 │   norm(rd, Inf) = 1.0488463431101991e-7
 │   norm(rp, Inf) = 1.7053025658242404e-12
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:63
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:68
 ┌ Info: [iter]
 │   del_mu = 0.9652827612470678
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:76
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:81
 ┌ Info: [iter]
 │   t = 24
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:59
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:64
 ┌ Info: [iter]
 │   mu = 0.10725364056174042
 │   norm(rd, Inf) = 1.0488463431101991e-8
 │   norm(rp, Inf) = 2.0463630789890885e-12
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:63
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:68
 ┌ Info: [iter]
 │   del_mu = 0.09652827650445853
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:76
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:81
 ┌ Info: [iter]
 │   t = 25
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:59
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:64
 ┌ Info: [iter]
 │   mu = 0.010725364057281887
 │   norm(rd, Inf) = 1.0488747648196295e-9
 │   norm(rp, Inf) = 1.3139541538143007e-12
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:63
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:68
 ┌ Info: [iter]
 │   del_mu = 0.009652827648354236
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:76
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:81
 ┌ Info: [iter]
 │   t = 26
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:59
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:64
 ┌ Info: [iter]
 │   mu = 0.0010725364089276509
 │   norm(rd, Inf) = 1.0487610779819079e-10
 │   norm(rp, Inf) = 1.0231815394945443e-12
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:63
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:68
 ┌ Info: [iter end]
 │   optimal = true
 │   niters = 25
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:80
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:85
 ┌ Info: [flow]
 │   x = [214.00000706660165, 481.9999961528188, 214.00000568900597, 1.558726093490442e-5, 695.9999876321596, 1.4209665225102866e-5, 1.2367840346937366e-5, 1.2367840359354991e-5]
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:124
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:134
 ┌ Info: [integral flow]
 │   x = [214, 482, 214, 0, 696, 0, 0, 0]
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:127
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:137
 ┌ Info: [integral flow]
 │   ox = [214, 482, 214, 0, 696, 0]
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:130
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:140

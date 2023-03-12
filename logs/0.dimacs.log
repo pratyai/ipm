@@ -8,15 +8,20 @@
 │   onetw.Demand = [-1, 1]
 └ @ Main /Users/pmz/gitspace/ipm/main.jl:120
 ┌ Info: [mcfp]
+│   onetw.Cost = [1]
+│   onetw.Cap = [1]
+│   onetw.Demand = [-1, 1]
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:121
+┌ Info: [mcfp]
 │   netw.G = Main.var"/Users/pmz/gitspace/ipm/graph.jl".Graphs.Graph(3, 3, [1 2; 1 3; 3 2], [-1 -1 0; 1 0 1; 0 1 -1], [0 1 1; 0 0 0; 0 1 0])
 │   netw.G.n = 3
 │   netw.G.m = 3
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:123
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:124
 ┌ Info: [mcfp]
 │   netw.Cost = [1, 1, 1]
 │   netw.Cap = [1, 1, 1]
 │   netw.Demand = [-1, 1, 0]
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:124
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:125
 ┌ Info: [phase 1]
 └ @ Main /Users/pmz/gitspace/ipm/main.jl:96
 ┌ Info: [iter]
@@ -113,10 +118,10 @@
 └ @ Main /Users/pmz/gitspace/ipm/main.jl:85
 ┌ Info: [flow]
 │   x = [0.9932427633383205, 0.006757236661679315, 0.006757236661679315]
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:133
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:134
 ┌ Info: [integral flow]
 │   x = [1, 0, 0]
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:136
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:137
 ┌ Info: [integral flow]
 │   ox = [1]
-└ @ Main /Users/pmz/gitspace/ipm/main.jl:139
+└ @ Main /Users/pmz/gitspace/ipm/main.jl:140

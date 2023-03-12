@@ -8,6 +8,7 @@ using LinearAlgebra
 using Statistics
 import Base.@kwdef
 using Setfield
+using SparseArrays
 
 @kwdef struct Solver
   kkt::kkt.Solver
@@ -29,7 +30,7 @@ function single_step(S::Solver; solver_fn = kkt.approx_kkt_solve)
   dx, dy, ds = solver_fn(s, rd, rp, rc)
   ap = minimum([-s.x[i] / dx[i] for i = 1:n if dx[i] < 0]; init = 1)
   ad = minimum([-s.s[i] / ds[i] for i = 1:n if ds[i] < 0]; init = 1)
-  ap, ad = 0.9 * ap, 0.9 * ad
+  ap, ad = 0.95 * ap, 0.95 * ad
   @debug "[iter]" ap ad dx dy ds
 
   s = @set s.x += ap * dx
@@ -50,8 +51,17 @@ function from_netw(netw::McfpNet, start::Union{Solver,Nothing} = nothing)
     start == nothing ? (0.1 * ones(n), zeros(m), 0.1 * ones(n)) :
     (start.kkt.x, start.kkt.y, start.kkt.s)
 
-  S =
-    Solver(kkt = kkt.Solver(A = [A 0A; I I], b = [b; u], c = [c; 0c], x = x, y = y, s = s))
+  S = Solver(
+    kkt = kkt.Solver(
+      A = sparse([A 0A; I I]),
+      b = [b; u],
+      c = [c; 0c],
+      x = x,
+      y = y,
+      s = s,
+      Ag = sparse(A),
+    ),
+  )
 
   return S
 end

@@ -8,12 +8,13 @@ using LinearAlgebra
 using Statistics
 import Base.@kwdef
 using Setfield
+using SparseArrays
 
 @kwdef struct Solver
   # tuning parameters
   gamma::Number = 1e-3
   sigma_min::Number = 0.5
-  sigma_max::Number = 0.9
+  sigma_max::Number = 0.95
   mu_tol::Number = 1e-6
 
   kkt::kkt.Solver
@@ -84,8 +85,17 @@ function from_netw(netw::McfpNet, start::Union{Solver,Nothing} = nothing)
     start == nothing ? (0.1 * ones(n), zeros(m), 0.1 * ones(n)) :
     (start.kkt.x, start.kkt.y, start.kkt.s)
 
-  S =
-    Solver(kkt = kkt.Solver(A = [A 0A; I I], b = [b; u], c = [c; 0c], x = x, y = y, s = s))
+  S = Solver(
+    kkt = kkt.Solver(
+      A = sparse([A 0A; I I]),
+      b = [b; u],
+      c = [c; 0c],
+      x = x,
+      y = y,
+      s = s,
+      Ag = sparse(A),
+    ),
+  )
   @assert is_good_neighbourhood(x, y, s, S.gamma)
 
   return S

@@ -117,7 +117,8 @@ function main()
   @info "[cmdline args]" args
   netw = ReadDimacs(args["i"])
   onetw = netw
-  @info "[mcfp]" onetw.G onetw.Cost onetw.Cap onetw.Demand
+  @info "[mcfp]" onetw.G onetw.G.n onetw.G.m
+  @info "[mcfp]" onetw.Cost onetw.Cap onetw.Demand
 
   netw, x = add_a_star_spanning_tree(netw, sum(netw.Cost))
   @info "[mcfp]" netw.G netw.G.n netw.G.m

@@ -35,6 +35,10 @@ function ReadLogEvents(path::String)
   events = String[]
   ce = nothing
   for l in lines
+    if length(l) >= 1000
+      # skip massive lines
+      continue
+    end
     if startswith(l, "┌")
       if ce != nothing
         append!(events, [ce])
@@ -144,8 +148,8 @@ function PlotNiters(stat)
   p2ic = [p2ic for (n, m, p1ic, p2ic) in stat]
 
   viz = function (var, name)
-    p = plot!(n_m, var, label = name, primary = true)
-    p = scatter!(n_m, var, primary = false)
+    p = plot!(n_m, var, xscale = :log10, label = name, primary = true)
+    p = scatter!(n_m, var, xscale = :log10, primary = false)
     return p
   end
 
