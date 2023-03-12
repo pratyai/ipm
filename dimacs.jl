@@ -32,7 +32,11 @@ function ReadDimacs(path::String)::McfpNet
       append!(C, c)
     end
   end
-  return McfpNet(FromEdgeList(n, E), C, U, B)
+  netw = McfpNet(FromEdgeList(n, E), C, U, B)
+
+  @assert sum(netw.Demand) == 0
+  @assert !any(E[:, 1] .== E[:, 2])
+  return netw
 end
 
 function WriteDimacs(path::String, G::McfpNet, flow::AbstractVector{Int})

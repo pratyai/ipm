@@ -3,7 +3,7 @@ import random as rng
 
 if __name__ == '__main__':
     rng.seed(2)
-    for n in [200, 300, 500]:
+    for n in [200, 300, 500, 700, 1000]:
         try:
             seed = rng.randint(0, 100)
             arcs = rng.randint(n, n*(n-1))

@@ -156,6 +156,7 @@ function PlotNiters(stat)
   p = viz(p1ic, "phase 1 #iters")
   p = viz(p2ic, "phase 2 #iters")
   p = viz(p1ic + p2ic, "net #iters")
+  hline!(p, [100], label = "cutoff")
 
   return p
 end

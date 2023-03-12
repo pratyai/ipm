@@ -8,8 +8,8 @@ struct Graph
   n::Int
   m::Int
   EdgeList::Matrix{Int}
-  IncidenceMatrix::Matrix{Int}
-  AdjacencyMatrix::Matrix{Int}
+  IncidenceMatrix::AbstractMatrix{Int}
+  AdjacencyMatrix::AbstractMatrix{Int}
 end
 
 function ToStandard(g::Graph)::DiGraph
@@ -32,21 +32,22 @@ end
 function MakeIncidenceMatrix(n::Int, E::AbstractMatrix{Int})
   m = size(E, 1)
   @assert size(E) == (m, 2)
-  A = zeros(Int, n, m)
-  for (i, (u, v)) in enumerate(eachrow(E))
-    A[[u, v], i] = [-1, 1]
-  end
-  return sparse(A)
+  I = vcat(E[1:m, 1], E[1:m, 2])
+  J = vcat(1:m, 1:m)
+  V = vcat(-ones(m), ones(m))
+  A = sparse(I, J, V)
+  return A
 end
 
 function MakeAdjacencyMatrix(n::Int, E::AbstractMatrix{Int}, w::AbstractVector{<:Number})
   m = size(E, 1)
   @assert size(E) == (m, 2)
-  Adj = zeros(eltype(w), n, n)
-  for (i, (u, v)) in enumerate(eachrow(E))
-    Adj[u, v] = w[i]
-  end
-  return sparse(Adj)
+  @assert size(w) == (m,)
+  I = E[1:m, 1]
+  J = E[1:m, 2]
+  V = w
+  Adj = sparse(I, J, V)
+  return Adj
 end
 
 function MakeSymmetricAdjacencyMatrix(
@@ -54,68 +55,14 @@ function MakeSymmetricAdjacencyMatrix(
   E::AbstractMatrix{Int},
   w::AbstractVector{<:Number} = ones(Int, size(E, 1)),
 )
-  Adj = zeros(eltype(w), n, n)
-  for (i, (u, v)) in enumerate(eachrow(E))
-    Adj[u, v] = w[i]
-    Adj[v, u] = w[i]
-  end
-  return sparse(Adj)
-end
-
-function ComputeTreeSolution(
-  n::Int,
-  EdgeList::AbstractMatrix{Int},
-  demand::AbstractVector{<:Number},
-)
-  T = prim(MakeSymmetricAdjacencyMatrix(n, EdgeList))
-
-  z = zeros(n, n)
-  vis = zeros(Int, n)
-
-  stk = Stack{Int}()
-  parent = zeros(Int, n)
-  b = deepcopy(demand)
-
-  # make 1 root
-  push!(stk, 1)
-  while !isempty(stk)
-    top = pop!(stk)
-    if top > 0
-      if vis[top] > 0
-        continue
-      end
-      vis[top] = 1
-      # first time we're seeing top
-      push!(stk, -top)
-      for nei in rowvals(T[top, :])
-        # hope that we don't have a cycle
-        if vis[nei] > 0
-          continue
-        end
-        parent[nei] = top
-        push!(stk, nei)
-      end
-    else
-      top = -top
-      vis[top] = 2
-      # unmet demand so far must be met by parent
-      if parent[top] == 0
-        # except for root, because it has no parent and is supposed to not have any unmet dependency by now.
-        continue
-      end
-      ub = b[top]
-      b[parent[top]] += ub
-      b[top] = 0
-      if ub > 0
-        z[parent[top], top] = abs(ub)
-      else
-        z[top, parent[top]] = abs(ub)
-      end
-    end
-  end
-  @assert all(b .< 1e-16)
-
-  return sparse(z), T
+  m = size(E, 1)
+  @assert size(E) == (m, 2)
+  @assert size(w) == (m,)
+  I = vcat(E[1:m, 1], E[1:m, 2])
+  J = vcat(E[1:m, 2], E[1:m, 1])
+  V = vcat(w, w)
+  Adj = sparse(I, J, V)
+  return Adj
 end
 
 struct McfpNet
@@ -123,21 +70,6 @@ struct McfpNet
   Cost::AbstractVector{Int}
   Cap::AbstractVector{Int}
   Demand::AbstractVector{Int}
-end
-
-struct AuxiliaryNet
-  G::Graph
-  Cost::AbstractVector{Int}
-  Demand::AbstractVector{Int}
-end
-
-struct AuxiliarySolutions
-  # arc flow
-  x::AbstractVector{<:Number}
-  # node potential
-  y::AbstractVector{<:Number}
-  # arc slack
-  s::AbstractVector{<:Number}
 end
 
 end  # module Graph

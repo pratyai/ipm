@@ -136,9 +136,9 @@ function approx_kkt_solve(
     d = x .* (1 .- x ./ (k .* s)) ./ s
     rs = -rp - A * ((x .* (rd + rq ./ k) - rc) ./ s)
 
-    L = A * diagm(d) * A'
+    L = A * spdiagm(d) * A'
     ainv = function (lap)
-      adj = sparse(diagm(diag(lap)) - lap)
+      adj = sparse(spdiagm(diag(lap)) - lap)
       return approxchol_lap(adj; tol = tol, params = ApproxCholParams())
     end
     Li = ainv(L)
