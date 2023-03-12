@@ -44,12 +44,14 @@ function big_kkt_solve(
   dxys = pinv(KKT) * r
   dx, dy, ds = dxys[1:n], dxys[n+1:n+m], dxys[n+m+1:n+m+n]
 
-  KKT = [
-    0I s.A' I
-    s.A 0I Z
-    S Z' X
-  ]
-  @debug "[kkt error]" (KKT * [dx; dy; ds] + [rd; rp; rc])
+  @debug begin
+    KKT = [
+      0I s.A' I
+      s.A 0I Z
+      S Z' X
+    ]
+    "[kkt error]"
+  end (KKT * [dx; dy; ds] + [rd; rp; rc])
   return dx, dy, ds
 end
 
@@ -71,14 +73,16 @@ function small_kkt_solve(
   dx, dy = dxy[1:n], dxy[n+1:n+m]
   ds = -(rc + s.s .* dx) ./ s.x
 
-  S, X = diagm(s.s), diagm(s.x)
-  Z = zeros(m, n)
-  KKT = [
-    0I s.A' I
-    s.A 0I Z
-    S Z' X
-  ]
-  @debug "[kkt error]" (KKT * [dx; dy; ds] + [rd; rp; rc])
+  @debug begin
+    S, X = diagm(s.s), diagm(s.x)
+    Z = zeros(m, n)
+    KKT = [
+      0I s.A' I
+      s.A 0I Z
+      S Z' X
+    ]
+    "[kkt error]"
+  end (KKT * [dx; dy; ds] + [rd; rp; rc])
   return dx, dy, ds
 end
 
@@ -93,15 +97,17 @@ function no_kkt_solve(
   dx = -(rc - s.x .* (rd + s.A' * dy)) ./ s.s
   ds = -(rc + s.s .* dx) ./ s.x
 
-  n, m = length(rd), length(rp)  # var, con
-  S, X = diagm(s.s), diagm(s.x)
-  Z = zeros(m, n)
-  KKT = [
-    0I s.A' I
-    s.A 0I Z
-    S Z' X
-  ]
-  @debug "[kkt error]" (KKT * [dx; dy; ds] + [rd; rp; rc])
+  @debug begin
+    n, m = length(rd), length(rp)  # var, con
+    S, X = diagm(s.s), diagm(s.x)
+    Z = zeros(m, n)
+    KKT = [
+      0I s.A' I
+      s.A 0I Z
+      S Z' X
+    ]
+    "[kkt error]"
+  end (KKT * [dx; dy; ds] + [rd; rp; rc])
   return dx, dy, ds
 end
 
@@ -144,15 +150,17 @@ function approx_kkt_solve(
   dx = -(rc - s.x .* (rd + s.A' * dy)) ./ s.s
   ds = -(rc + s.s .* dx) ./ s.x
 
-  n, m = length(rd), length(rp)  # var, con
-  S, X = diagm(s.s), diagm(s.x)
-  Z = zeros(m, n)
-  KKT = [
-    0I s.A' I
-    s.A 0I Z
-    S Z' X
-  ]
-  @debug "[kkt error]" (KKT * [dx; dy; ds] + [rd; rp; rc])
+  @debug begin
+    n, m = length(rd), length(rp)  # var, con
+    S, X = diagm(s.s), diagm(s.x)
+    Z = zeros(m, n)
+    KKT = [
+      0I s.A' I
+      s.A 0I Z
+      S Z' X
+    ]
+    "[kkt error]"
+  end (KKT * [dx; dy; ds] + [rd; rp; rc])
 
   return dx, dy, ds
 end

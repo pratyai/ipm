@@ -7,6 +7,11 @@ using Setfield
 using Printf
 using Statistics
 
+using Profile
+using FileIO
+using PProf
+using Serialization
+
 @from "graph.jl" import Graphs.McfpNet
 @from "dimacs.jl" import Dimacs.ReadDimacs
 @from "long_step_path_following.jl" import LongStepPathFollowing as lpf
@@ -119,7 +124,10 @@ function main()
   @info "[mcfp]" netw.Cost netw.Cap netw.Demand
 
   p1s = do_phase_1(netw, x)
-  p2s = do_phase_2(netw, p1s)
+  p2s = @profile do_phase_2(netw, p1s)
+  open("profiles/" * basename(args["i"]) * ".bean", "w") do f
+    serialize(f, Profile.retrieve())
+  end
 
   x = p2s.kkt.x[1:netw.G.m]
   @info "[flow]" x
