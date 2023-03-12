@@ -121,15 +121,10 @@ function PlotMu(events, phase)
   end
 
   viz = function (var, name)
-    ind = var .> 0
-    p = plot!(
-      t[ind],
-      var[ind],
-      yscale = :log10,
-      label = name * " (" * phase * ")",
-      primary = true,
-    )
-    p = scatter!(t[ind], var[ind], yscale = :log10, primary = false)
+    ind = var .== 0
+    var[ind] .= 1e-20
+    p = plot!(t, var, yscale = :log10, label = name * " (" * phase * ")", primary = true)
+    p = scatter!(t, var, yscale = :log10, primary = false)
     return p
   end
 
@@ -239,7 +234,7 @@ function do_aggregate_log(d::String)
 
   stat = [stat_lg(lg) for lg in logs]
 
-  p = plot(dpi = 300, size = (800, 640), legend = :outerbottom)
+  p = plot(dpi = 300, size = (800, 640), legend = :outerbottom, legend_columns = 4)
   p = LogViz.PlotNiters(stat)
   xlabel!("n + m")
 end

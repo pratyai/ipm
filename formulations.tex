@@ -24,6 +24,8 @@
 \usepackage{hyperref}
 \usepackage{cleveref}
 \usepackage{enumerate}
+\usepackage{caption}
+\usepackage{subcaption}
 \restylefloat{figure}
 % \setminted{fontsize=\tiny,linenos=true,frame=single,breaklines=true}
 \allowdisplaybreaks
@@ -31,7 +33,7 @@
 \algrenewcommand{\Return}{\State\algorithmicreturn~}
 \DeclareMathOperator*{\argmin}{arg\,min}
 
-\title{IPM forumalations for thesis}
+\title{IPM forumalations}
 \author{Pratyai Mazumder}
 
 \renewcommand{\thesubsection}{\thesection.\roman{subsection}}
@@ -45,6 +47,8 @@
 \begin{document}
 
 \maketitle
+
+\tableofcontents
 
 \section{Original Problem}
 
@@ -69,15 +73,15 @@
 \subsection{Dual}
 
 \begin{maxi}|s|
-{\mathbf{y}, \mathbf{y}_u}{\mathbf{b}^T\mathbf{y} - \mathbf{u}^T\mathbf{y}_u}{}{}
-\addConstraint{\mathbf{A}^T\mathbf{y} - \mathbf{y}_u}{\leq \mathbf{c}}
+{\mathbf{y}, \mathbf{y}_u}{\mathbf{b}^T\mathbf{y} + \mathbf{u}^T\mathbf{y}_u}{}{}
+\addConstraint{\mathbf{A}^T\mathbf{y} + \mathbf{y}_u}{\leq \mathbf{c}}
 \addConstraint{\mathbf{y}, \mathbf{y}_u}{\in \R^n, \Rgez^m}
 \end{maxi}
 
 \subsection{Dual Standard form}
 
 \begin{maxi}|s|
-{\mathbf{y}, \mathbf{y}_u}{\mathbf{b}^T\mathbf{y} - \mathbf{u}^T\mathbf{y}_u}{}{}
+{\mathbf{y}, \mathbf{y}_u}{\mathbf{b}^T\mathbf{y} + \mathbf{u}^T\mathbf{y}_u}{}{}
 \addConstraint{\mathbf{A}^T\mathbf{y} + \mathbf{y}_u + \mathbf{z}}{= \mathbf{c}}
 \addConstraint{\mathbf{y}, \mathbf{y}_u, \mathbf{z}}{\in \R^n, \Rgez^m, \Rgez^m}
 \end{maxi}
@@ -95,6 +99,8 @@ But if we want $\mathbf{y}$ variables to be free, then dualize the standard from
 \subsection{Long Step Path Following Method}
 
 Ref: \href{https://link.springer.com/book/10.1007/978-0-387-40065-5}{Numerical Optimization (Alg. 14.2)}
+
+It turns out that staying inside the \emph{good neighbourhood} of the central path can be difficult with an approximate solver. So, we will use \texttt{Mehrotra's Predictor Corrector Method} to solve the sample problems. The formulation is the same in both cases, so we will describe it here for simplicity.
 
 Due to the formulation, we have to work with the standard form.
 
@@ -182,7 +188,7 @@ Substituting in the $Md_y = -r_p - AS^{-1}Xr_d + AS^{-1}r_c = -r_p -  AS^{-1}(Xr
 	-r_p - \mathbf{A}\mathbf{S}^{-1}(\mathbf{X}r_d - r_c) \\
 	r_q
 \end{bmatrix} \\
-\intertext{Pretending that $\mathbf{K}$ is invertible, and scaling:}
+\intertext{Observing that $\mathbf{K}$ is invertible, and scaling:}
 \begin{bmatrix}
 	\mathbf{A}\mathbf{S}^{-1}\mathbf{X}\mathbf{A}^T & \mathbf{A}\mathbf{S}^{-1}\mathbf{X} \\
 	\mathbf{K}^{-1}\mathbf{S}^{-1}\mathbf{X}\mathbf{A}^T & I
@@ -236,5 +242,78 @@ Substituting in the $Md_y = -r_p - AS^{-1}Xr_d + AS^{-1}r_c = -r_p -  AS^{-1}(Xr
 \delta_x &= -S^{-1}(r_c - X(r_d + A^Td-y))\\
 \delta_s &= -X^{-1}(r_c + Sd_x)
 \end{align*}
+
+\subsection{Mehrotra's Predictor Corrector Method}
+
+Ref: \href{https://link.springer.com/book/10.1007/978-0-387-40065-5}{Numerical Optimization (Alg. 14.3)}
+
+We reuse the same solver as \texttt{Long Step Path Following Method}, since the left hand side is the same for all systems that we have to solve, and we can simply provide a different right hand side.
+
+\section{Phase 1}
+
+We want to start the actual optimisation somewhere close to the central path, which is quite difficult to construct. So, we solved the same problem with zero cost first, to get close to the analytic centre of the feasible region.
+
+But it turns out, even Phase-1 doesn't work well if we do not start from a feasible flow, which again is difficult to construct. So, we simply added a \emph{star} node with 0 demand, and connected all the other nodes to it with high cost and capacity. Now it is trivial to construct a feasible flow that only routes through this \emph{star} node.
+
+\section{Integral Flow}
+
+Ref: \href{https://arxiv.org/pdf/1507.08139.pdf}{Flow Rounding (Sec. 4)}
+
+For the problems that converge near the optimal, we can \emph{round} them to an integral flow by cancelling the fractional flows in $\Oo(m\log n)$. This was implemented using \emph{link-cut trees}, although I did not verify that the implementation indeed has the claimed time-complexity.
+
+Currently considering: Instead of rounding the flow at the end, it might be possible to round at every iteration of Phase-2 if the primal infeasibility ($\|r_p\|_\infty$) is low enough. I have not analysed the implication of this for the other termination conditions of the IPM.
+
+\section{Results}
+
+Both of the methods described above were implemented in Julia. \texttt{Mehrotra's method} was used to produce the following results. \href{https://github.com/pratyai/ipm}{This public GitHub repository} contains all relevant codes, runtime logs, and plots. We use some of them here to make a few observations.
+
+\begin{itemize}
+\item In all cases, Phase-1 converged relatively quickly (e.g., within 20 iterations, even for the largest problem).
+\item In all cases, Phase-2 started with low surrogate duality gap ($\mu$), low primal infeasibility ($\|r_p\|_\infty$) and high dual infeasibility ($\|r_d\|_\infty$).
+\item For the first half of Phase-2, $\mu$ \emph{increased}, while $\|r_d\|_\infty$ stayed high. Once $\mu$ roughly matched $\|r_d\|_\infty$, only then both started to decrease together. For the converging problems, $\|r_p\|_\infty$ stayed relatively low --- but for the diverging problems, $\|r_p\|_\infty$ shot up around the same time $\mu$ matched $\|r_d\|_\infty$, and never recovered.
+\end{itemize}
+
+\begin{figure}[b]
+\centering
+
+\includegraphics[width=0.7\textwidth]{plots/logs.png}
+\caption{Each phase were allowed a maximum of 100 iterations. The two largest problems (\texttt{m = 166088} and \texttt{m = 309364}) diverged. Until then all the problems (up to \texttt{m = 87590}) converged with roughly logarithmic growth of number of iterations with the problem size (i.e., \texttt{n + m})}
+\end{figure}
+
+\begin{figure}
+\centering
+
+\begin{subfigure}[b]{0.49\textwidth}
+\includegraphics[width=\textwidth]{plots/ng_50_2228_17_5_97.dimacs.log.png}
+\caption{\texttt{n = 50, m = 1440}.}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.49\textwidth}
+\includegraphics[width=\textwidth]{plots/ng_100_8813_33_9_97.dimacs.log.png}
+\caption{\texttt{n = 100, m = 6006}.}
+\end{subfigure}
+
+\begin{subfigure}[b]{0.49\textwidth}
+\includegraphics[width=\textwidth]{plots/ng_300_20072_51_84_41.dimacs.log.png}
+\caption{\texttt{n = 300, m = 20072}.}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.49\textwidth}
+\includegraphics[width=\textwidth]{plots/ng_500_87590_60_43_48.dimacs.log.png}
+\caption{\texttt{n = 500, m = 87590}.}
+\end{subfigure}
+
+\begin{subfigure}[b]{0.49\textwidth}
+\includegraphics[width=\textwidth]{plots/ng_700_166088_34_286_70.dimacs.log.png}
+\caption{\texttt{n = 700, m = 166088}.}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.49\textwidth}
+\includegraphics[width=\textwidth]{plots/ng_1000_309364_236_231_15.dimacs.log.png}
+\caption{\texttt{n = 1000, m = 309364}.}
+\end{subfigure}
+
+\caption{Progression of surrogate duality gap ($\mu = \frac{s^Tx}{n}$), primal infeasibility ($\|r_p\|_\infty$), and dual infeasibility ($\|r_d\|_\infty$) for some example problems.}
+\end{figure}
 
 \end{document}
